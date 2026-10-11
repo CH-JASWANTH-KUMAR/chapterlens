@@ -109,6 +109,28 @@ export function EducationalSection() {
         </div>
       </div>
 
+      {/* Editorial Studio Philosophy Banner */}
+      <div className="flex flex-col md:flex-row items-center gap-6 rounded-2xl border border-[#E6E4D9] bg-white p-6 sm:p-8 shadow-editorial">
+        <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-xl border border-[#E6E4D9] shadow-inner bg-[#FBFBF9]">
+          <img
+            src="/brand_mark.jpg"
+            alt="ChapterLens Editorial Bookplate"
+            className="h-full w-full object-cover"
+          />
+        </div>
+        <div className="space-y-2 text-center md:text-left">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[#537562]">
+            Authorial Philosophy
+          </span>
+          <h3 className="font-editorial-serif text-2xl font-bold text-[#1C1E1D]">
+            Crafting Clarity Without Sacrificing Soul
+          </h3>
+          <p className="text-xs leading-relaxed text-[#5E6460]">
+            Every great story balances compression and elaboration. ChapterLens gives authors transparency into where readers slow down, stumble, or hold their breath—so you can decide whether that cognitive pause is intentional artistry or accidental friction.
+          </p>
+        </div>
+      </div>
+
       {/* How it Works Section */}
       <div id="how-it-works" className="rounded-xl border border-[#CBD9D0] bg-[#EBF1ED]/40 p-6 sm:p-8">
         <div className="flex items-center gap-2 text-[#1A3C2D]">
