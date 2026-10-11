@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-serif: 'Lora', 'Georgia', 'Cambria', serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Editorial Studio Color Palette */
+    --paper-canvas: #FBFBF9;
+    --paper-surface: #FFFFFF;
+    --paper-surface-muted: #F5F4EE;
+    --paper-border: #E6E4D9;
+    --paper-border-strong: #CDC9B8;
+    
+    --brand-forest: #1A3C2D;
+    --brand-forest-dark: #122B20;
+    --brand-forest-light: #25523F;
+    --brand-sage: #537562;
+    --brand-sage-light: #EBF1ED;
+    --brand-sage-border: #CBD9D0;
+
+    --charcoal-900: #1C1E1D;
+    --charcoal-800: #2C302E;
+    --charcoal-700: #424744;
+    --charcoal-600: #5E6460;
+    --charcoal-500: #7A817D;
+
+    --amber-warning: #C2632B;
+    --amber-warning-light: #FDF4ED;
+    --amber-warning-border: #F3CBB3;
+
+    --ruby-friction: #9E3535;
+    --ruby-friction-light: #FDF1F1;
+    --ruby-friction-border: #F1BDBD;
+  }
+
+  body {
+    background-color: var(--paper-canvas);
+    color: var(--charcoal-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background-color: #DDE8E0;
+    color: #122B20;
+  }
+}
+
+/* Editorial Typography Helpers */
+.font-editorial-serif {
+  font-family: var(--font-serif);
+}
+
+.font-editorial-sans {
+  font-family: var(--font-sans);
+}
+
+.font-editorial-mono {
+  font-family: var(--font-mono);
+}
+
+/* Subtle print-grade hairline borders */
+.border-editorial {
+  border-color: var(--paper-border);
+}
+
+.border-editorial-strong {
+  border-color: var(--paper-border-strong);
+}
+
+/* Refined paper shadow */
+.shadow-editorial-sm {
+  box-shadow: 0 1px 2px 0 rgba(28, 30, 29, 0.04);
+}
+
+.shadow-editorial {
+  box-shadow: 0 2px 6px -1px rgba(28, 30, 29, 0.05), 0 1px 3px -1px rgba(28, 30, 29, 0.03);
+}
+
+.shadow-editorial-elevated {
+  box-shadow: 0 10px 25px -5px rgba(28, 30, 29, 0.07), 0 8px 10px -6px rgba(28, 30, 29, 0.04);
+}
+
+/* Interactive highlight styling in text */
+.sentence-highlight {
+  position: relative;
+  border-bottom: 2px solid;
+  border-radius: 2px;
+  padding: 1px 2px;
+  margin: 0 -1px;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.sentence-highlight:focus-visible {
+  outline: 2px solid var(--brand-forest);
+  outline-offset: 2px;
+}
+
+.sentence-highlight-rank-1 {
+  background-color: rgba(243, 203, 179, 0.55);
+  border-color: #C2632B;
+}
+
+.sentence-highlight-rank-2 {
+  background-color: rgba(248, 219, 186, 0.55);
+  border-color: #D47A40;
+}
+
+.sentence-highlight-rank-3 {
+  background-color: rgba(249, 230, 198, 0.55);
+  border-color: #DDA248;
+}
+
+.sentence-highlight-rank-4 {
+  background-color: rgba(235, 241, 237, 0.7);
+  border-color: #799C87;
+}
+
+.sentence-highlight-rank-5 {
+  background-color: rgba(235, 241, 237, 0.6);
+  border-color: #8FAEA0;
+}
+
+.sentence-highlight-selected {
+  outline: 2px solid #1A3C2D;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(26, 60, 45, 0.15);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
