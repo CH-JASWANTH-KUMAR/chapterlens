@@ -5,7 +5,7 @@ import { ThemeProvider } from '../context/ThemeContext';
 export const metadata: Metadata = {
   title: 'ChapterLens — Understand your writing. Keep your voice.',
   description:
-    'A production-grade editorial readability studio for authors. Calculate exact Flesch Reading Ease scores, isolate your chapter’s five hardest sentences, and inspect transparent linguistic signals entirely inside your browser.',
+    'A production-grade editorial readability studio for authors. Calculate exact Flesch Reading Ease scores, isolate your chapter’s hardest sentences, and inspect transparent linguistic signals entirely inside your browser.',
   keywords: [
     'readability score',
     'Flesch Reading Ease',
@@ -33,21 +33,20 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
-        <meta name="color-scheme" content="light dark" />
+        <meta name="color-scheme" content="light" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
-        {/* Anti-FOUC Theme Initializer */}
+        {/* Anti-FOUC Theme Initializer: Light mode is default for all new visitors */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function() {
               try {
                 var stored = localStorage.getItem('chapterlens-theme');
-                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                if (stored === 'dark' || (!stored && prefersDark)) {
+                if (stored === 'dark') {
                   document.documentElement.classList.add('dark');
                   var meta = document.querySelector('meta[name="color-scheme"]');
                   if (meta) meta.setAttribute('content', 'dark');

@@ -14,14 +14,14 @@
     --canvas-bg: #FBFBF8;
     --canvas-card: #FFFFFF;
     --canvas-card-subtle: #F5F4EE;
-    --canvas-card-hover: #EFECE3;
+    --canvas-card-hover: #ECEAE1;
     
     --border-subtle: #E6E3D8;
     --border-strong: #CDC9BA;
     
     --text-main: #191B1A;
-    --text-muted: #505753;
-    --text-faint: #7B837E;
+    --text-muted: #4B524E;
+    --text-faint: #757D77;
     
     --brand-forest: #193D2D;
     --brand-forest-hover: #122C20;
@@ -36,91 +36,103 @@
     --selection-text: #10291E;
 
     /* Difficulty Highlight Badges & Highlights - Light Mode */
-    --highlight-r1-bg: rgba(243, 203, 179, 0.50);
+    --highlight-r1-bg: rgba(243, 203, 179, 0.55);
     --highlight-r1-border: #C2632B;
     --highlight-r1-marker: #C2632B;
-    --highlight-r1-text: #8A3B14;
+    --highlight-r1-marker-text: #FFFFFF;
+    --highlight-r1-text: #191B1A;
 
-    --highlight-r2-bg: rgba(248, 219, 186, 0.50);
+    --highlight-r2-bg: rgba(248, 219, 186, 0.55);
     --highlight-r2-border: #D47A40;
     --highlight-r2-marker: #D47A40;
-    --highlight-r2-text: #964718;
+    --highlight-r2-marker-text: #FFFFFF;
+    --highlight-r2-text: #191B1A;
 
-    --highlight-r3-bg: rgba(249, 230, 198, 0.50);
+    --highlight-r3-bg: rgba(249, 230, 198, 0.55);
     --highlight-r3-border: #DDA248;
     --highlight-r3-marker: #C2872A;
-    --highlight-r3-text: #85530E;
+    --highlight-r3-marker-text: #FFFFFF;
+    --highlight-r3-text: #191B1A;
 
-    --highlight-r4-bg: rgba(225, 238, 230, 0.65);
-    --highlight-r4-border: #5A856D;
-    --highlight-r4-marker: #456D56;
-    --highlight-r4-text: #1B4530;
+    --highlight-r4-bg: rgba(225, 238, 230, 0.70);
+    --highlight-r4-border: #3E6E52;
+    --highlight-r4-marker: #2E6347;
+    --highlight-r4-marker-text: #FFFFFF;
+    --highlight-r4-text: #191B1A;
 
-    --highlight-r5-bg: rgba(225, 238, 230, 0.50);
-    --highlight-r5-border: #759E87;
-    --highlight-r5-marker: #5A856D;
-    --highlight-r5-text: #26523B;
+    --highlight-r5-bg: rgba(225, 238, 230, 0.55);
+    --highlight-r5-border: #5A856D;
+    --highlight-r5-marker: #3B7354;
+    --highlight-r5-marker-text: #FFFFFF;
+    --highlight-r5-text: #191B1A;
 
-    --highlight-selected-ring: rgba(25, 61, 45, 0.20);
+    --highlight-selected-ring: rgba(25, 61, 45, 0.22);
     --highlight-selected-border: #193D2D;
+    --highlight-selected-bg: rgba(25, 61, 45, 0.10);
   }
 
   .dark {
     color-scheme: dark;
 
-    /* Dark Palette: Deep Charcoal, Dark Slate & Emerald Accents */
-    --canvas-bg: #101211;
+    /* Dark Palette: Layered Charcoal, Dark Slate & Vivid Emerald */
+    --canvas-bg: #0F1110;
     --canvas-card: #181C1A;
-    --canvas-card-subtle: #202623;
-    --canvas-card-hover: #262E2A;
+    --canvas-card-subtle: #212623;
+    --canvas-card-hover: #29302C;
     
-    --border-subtle: #29332D;
-    --border-strong: #3B4941;
+    --border-subtle: #2B332E;
+    --border-strong: #3D4842;
     
-    --text-main: #F3F5F3;
-    --text-muted: #A8B2AA;
-    --text-faint: #6D7871;
+    --text-main: #F4F6F4;
+    --text-muted: #A6B0A9;
+    --text-faint: #737E77;
     
-    --brand-forest: #22563F;
-    --brand-forest-hover: #2C6E51;
+    --brand-forest: #1C4834;
+    --brand-forest-hover: #245C42;
     --brand-forest-light: #34D399;
     --brand-emerald: #34D399;
     
-    --brand-accent-bg: #152B20;
-    --brand-accent-border: #244C39;
+    --brand-accent-bg: #14281E;
+    --brand-accent-border: #234735;
     --brand-accent-text: #6EE7B7;
 
     --selection-bg: #1E4634;
     --selection-text: #ECFDF5;
 
-    /* Difficulty Highlight Badges & Highlights - Dark Mode */
-    --highlight-r1-bg: rgba(194, 99, 43, 0.28);
-    --highlight-r1-border: #F08746;
-    --highlight-r1-marker: #F08746;
-    --highlight-r1-text: #FDE8DC;
+    /* Difficulty Highlight Badges & Highlights - Dark Mode (High Contrast & Legible) */
+    --highlight-r1-bg: rgba(234, 88, 12, 0.22);
+    --highlight-r1-border: #FB923C;
+    --highlight-r1-marker: #F97316;
+    --highlight-r1-marker-text: #0F1110;
+    --highlight-r1-text: #F4F6F4;
 
-    --highlight-r2-bg: rgba(212, 122, 64, 0.25);
-    --highlight-r2-border: #F59B5E;
-    --highlight-r2-marker: #F59B5E;
-    --highlight-r2-text: #FDEFE6;
+    --highlight-r2-bg: rgba(249, 115, 22, 0.18);
+    --highlight-r2-border: #FDBA74;
+    --highlight-r2-marker: #FB923C;
+    --highlight-r2-marker-text: #0F1110;
+    --highlight-r2-text: #F4F6F4;
 
-    --highlight-r3-bg: rgba(221, 162, 72, 0.22);
-    --highlight-r3-border: #F8C36B;
-    --highlight-r3-marker: #F8C36B;
-    --highlight-r3-text: #FEF7EA;
+    --highlight-r3-bg: rgba(234, 179, 8, 0.18);
+    --highlight-r3-border: #FDE047;
+    --highlight-r3-marker: #FACC15;
+    --highlight-r3-marker-text: #0F1110;
+    --highlight-r3-text: #F4F6F4;
 
-    --highlight-r4-bg: rgba(52, 211, 153, 0.16);
+    --highlight-r4-bg: rgba(16, 185, 129, 0.18);
     --highlight-r4-border: #34D399;
     --highlight-r4-marker: #34D399;
-    --highlight-r4-text: #E6FAF1;
+    --highlight-r4-marker-text: #0F1110;
+    --highlight-r4-text: #F4F6F4;
 
-    --highlight-r5-bg: rgba(52, 211, 153, 0.12);
+    --highlight-r5-bg: rgba(16, 185, 129, 0.14);
     --highlight-r5-border: #6EE7B7;
-    --highlight-r5-marker: #2EBA84;
-    --highlight-r5-text: #E6FAF1;
+    --highlight-r5-marker: #6EE7B7;
+    --highlight-r5-marker-text: #0F1110;
+    --highlight-r5-text: #F4F6F4;
 
-    --highlight-selected-ring: rgba(52, 211, 153, 0.30);
+    --highlight-selected-ring: rgba(52, 211, 153, 0.28);
     --highlight-selected-border: #34D399;
+    --highlight-selected-bg: rgba(52, 211, 153, 0.16);
   }
 
   body {
@@ -175,31 +187,40 @@
 }
 
 .dark .shadow-editorial-sm {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
 }
 
 .dark .shadow-editorial {
-  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.35);
 }
 
 .dark .shadow-editorial-elevated {
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 10px 16px -8px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.75), 0 10px 16px -8px rgba(0, 0, 0, 0.55);
 }
 
-/* Interactive highlight styling in text */
+/* Interactive highlight styling in text (Guarantees perfect legibility in both light and dark mode) */
 .sentence-highlight {
   position: relative;
   border-bottom: 2px solid;
   border-radius: 3px;
   padding: 1px 3px;
   margin: 0 -1px;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--text-main);
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   cursor: pointer;
 }
 
 .sentence-highlight:focus-visible {
   outline: 2px solid var(--brand-emerald);
   outline-offset: 2px;
+}
+
+.sentence-highlight:hover {
+  filter: brightness(1.06);
+}
+
+.dark .sentence-highlight:hover {
+  filter: brightness(1.15);
 }
 
 .sentence-highlight-rank-1 {
@@ -228,9 +249,10 @@
 }
 
 .sentence-highlight-selected {
-  outline: 2px solid var(--highlight-selected-border);
+  outline: 2px solid var(--highlight-selected-border) !important;
   outline-offset: 2px;
   box-shadow: 0 0 0 4px var(--highlight-selected-ring);
+  background-color: var(--highlight-selected-bg) !important;
 }
 
 /* Custom scrollbars for editorial reading surfaces */

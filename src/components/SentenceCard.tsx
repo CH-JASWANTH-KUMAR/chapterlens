@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { DifficultSentence } from '../lib/linguistics/types';
-import { Copy, Check, Eye, Wand2, AlertCircle, Sparkles } from 'lucide-react';
+import { Copy, Check, Eye, Wand2 } from 'lucide-react';
 
 interface SentenceCardProps {
   sentence: DifficultSentence;
@@ -27,11 +27,11 @@ export function SentenceCard({
   };
 
   const rankBadgeStyles: Record<number, string> = {
-    1: 'bg-[var(--highlight-r1-marker)] text-white',
-    2: 'bg-[var(--highlight-r2-marker)] text-white',
-    3: 'bg-[var(--highlight-r3-marker)] text-white dark:text-neutral-900',
-    4: 'bg-[var(--highlight-r4-marker)] text-white dark:text-neutral-900',
-    5: 'bg-[var(--highlight-r5-marker)] text-white dark:text-neutral-900',
+    1: 'bg-[var(--highlight-r1-marker)] text-[var(--highlight-r1-marker-text)]',
+    2: 'bg-[var(--highlight-r2-marker)] text-[var(--highlight-r2-marker-text)]',
+    3: 'bg-[var(--highlight-r3-marker)] text-[var(--highlight-r3-marker-text)]',
+    4: 'bg-[var(--highlight-r4-marker)] text-[var(--highlight-r4-marker-text)]',
+    5: 'bg-[var(--highlight-r5-marker)] text-[var(--highlight-r5-marker-text)]',
   };
 
   const primaryIssueLabels: Record<string, { label: string; badge: string }> = {
@@ -59,6 +59,20 @@ export function SentenceCard({
 
   const issueInfo = primaryIssueLabels[sentence.primaryIssue] || primaryIssueLabels.combination;
 
+  const handleLocate = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect(sentence);
+    const el = document.getElementById(`highlight-${sentence.id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Add a quick pulse effect
+      el.classList.add('ring-4', 'ring-[var(--brand-emerald)]');
+      setTimeout(() => {
+        el.classList.remove('ring-4', 'ring-[var(--brand-emerald)]');
+      }, 1500);
+    }
+  };
+
   return (
     <article
       id={`card-${sentence.id}`}
@@ -72,123 +86,120 @@ export function SentenceCard({
           onSelect(sentence);
         }
       }}
-      className={`group relative rounded-2xl border p-5 sm:p-6 transition-all duration-200 text-left outline-none cursor-pointer ${
+      className={`group relative rounded-2xl border p-5 flex flex-col justify-between transition-all duration-200 text-left outline-none cursor-pointer ${
         isSelected
           ? 'border-[var(--brand-emerald)] bg-[var(--canvas-card-subtle)] shadow-editorial ring-2 ring-[var(--brand-emerald)]/25'
           : 'border-[var(--border-subtle)] bg-[var(--canvas-card)] hover:border-[var(--border-strong)] hover:shadow-editorial-sm'
       }`}
     >
-      {/* Card Header: Rank, Score, and Primary Issue Badge */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-[var(--border-subtle)] pb-3.5">
-        <div className="flex items-center gap-2.5">
+      {/* Top Segment: Header, Original Quote & Diagnostic */}
+      <div className="space-y-3.5">
+        {/* Card Header */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shadow-xs select-none ${
+                rankBadgeStyles[sentence.rank] || 'bg-neutral-800 text-white'
+              }`}
+            >
+              {sentence.rank}
+            </span>
+            <span className="font-editorial-sans text-xs font-bold text-[var(--text-main)]">
+              Rank #{sentence.rank}
+            </span>
+            <span className="text-[11px] text-[var(--text-faint)] font-editorial-mono">
+              Score: <strong className="text-[var(--text-main)]">{sentence.difficultyScore}</strong>
+            </span>
+          </div>
+
           <span
-            className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold shadow-xs ${
-              rankBadgeStyles[sentence.rank] || 'bg-neutral-800 text-white'
-            }`}
+            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${issueInfo.badge}`}
           >
-            {sentence.rank}
-          </span>
-          <span className="font-editorial-sans text-xs font-bold text-[var(--text-main)]">
-            Sentence #{sentence.rank}
-          </span>
-          <span className="text-xs text-[var(--text-faint)]">
-            Score:{' '}
-            <strong className="font-editorial-mono font-bold text-[var(--text-main)]">
-              {sentence.difficultyScore}
-            </strong>
+            {issueInfo.label}
           </span>
         </div>
 
-        <span
-          className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${issueInfo.badge}`}
-        >
-          {issueInfo.label}
-        </span>
-      </div>
+        {/* Verbatim Sentence Blockquote */}
+        <div>
+          <blockquote className="font-editorial-serif text-[14.5px] italic leading-relaxed text-[var(--text-main)] border-l-2 border-[var(--brand-emerald)]/60 pl-3">
+            &ldquo;{sentence.text}&rdquo;
+          </blockquote>
+        </div>
 
-      {/* Verbatim Sentence Blockquote */}
-      <div className="mt-4">
-        <blockquote className="font-editorial-serif text-[15px] sm:text-[16px] italic leading-relaxed text-[var(--text-main)] border-l-2 border-[var(--brand-emerald)]/50 pl-3.5">
-          “{sentence.text}”
-        </blockquote>
-      </div>
-
-      {/* Honest Diagnostic Explanation */}
-      <div className="mt-4 rounded-xl bg-[var(--canvas-card-subtle)] border border-[var(--border-subtle)] p-3.5 text-xs text-[var(--text-muted)] space-y-2">
-        <p className="leading-relaxed">
-          <strong className="text-[var(--text-main)]">Linguistic Diagnostic:</strong>{' '}
-          {sentence.explanation}
-        </p>
-        {sentence.editorialTip && (
-          <p className="text-[var(--brand-accent-text)] dark:text-[var(--brand-emerald)] font-medium leading-relaxed border-t border-[var(--border-subtle)] pt-2">
-            <strong>Editorial craft tip:</strong> {sentence.editorialTip}
+        {/* Honest Diagnostic Explanation */}
+        <div className="rounded-xl bg-[var(--canvas-card-subtle)] border border-[var(--border-subtle)] p-3 text-xs text-[var(--text-muted)] space-y-1.5 leading-relaxed">
+          <p>
+            <strong className="text-[var(--text-main)]">Diagnostic:</strong> {sentence.explanation}
           </p>
-        )}
-      </div>
-
-      {/* Contributing Signals Breakdown Chips */}
-      <div className="mt-3.5 grid grid-cols-2 gap-2 sm:grid-cols-4 text-[11px] text-[var(--text-muted)]">
-        <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-2.5 py-1.5 flex flex-col">
-          <span className="text-[10px] text-[var(--text-faint)]">Word count</span>
-          <strong className="font-editorial-mono font-bold text-[var(--text-main)]">
-            {sentence.signals.wordCount}
-          </strong>
-        </div>
-        <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-2.5 py-1.5 flex flex-col">
-          <span className="text-[10px] text-[var(--text-faint)]">Syl / word</span>
-          <strong className="font-editorial-mono font-bold text-[var(--text-main)]">
-            {sentence.signals.avgSyllablesPerWord}
-          </strong>
-        </div>
-        <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-2.5 py-1.5 flex flex-col">
-          <span className="text-[10px] text-[var(--text-faint)]">Complex words</span>
-          <strong className="font-editorial-mono font-bold text-[var(--text-main)]">
-            {sentence.signals.polysyllabicWordCount}
-          </strong>
-        </div>
-        <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-2.5 py-1.5 flex flex-col">
-          <span className="text-[10px] text-[var(--text-faint)]">Punctuation marks</span>
-          <strong className="font-editorial-mono font-bold text-[var(--text-main)]">
-            {sentence.signals.complexPunctuationCount}
-          </strong>
+          {sentence.editorialTip && (
+            <p className="text-[var(--brand-accent-text)] dark:text-[var(--brand-emerald)] font-medium border-t border-[var(--border-subtle)] pt-1.5 mt-1.5">
+              <strong>Craft tip:</strong> {sentence.editorialTip}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Card Actions Footer */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2.5 border-t border-[var(--border-subtle)] pt-3.5">
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect(sentence);
-            const el = document.getElementById(`highlight-${sentence.id}`);
-            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-3 py-1.5 text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--brand-emerald)] hover:bg-[var(--canvas-card-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--brand-emerald)]"
-        >
-          <Eye className="h-3.5 w-3.5 text-[var(--brand-emerald)]" />
-          <span>{isSelected ? 'Focused in Manuscript' : 'Locate in Text'}</span>
-        </button>
+      {/* Bottom Segment: Signal Chips & Structured Actions */}
+      <div className="mt-4 pt-3.5 border-t border-[var(--border-subtle)] space-y-3">
+        {/* Contributing Signals Breakdown Chips */}
+        <div className="grid grid-cols-2 gap-1.5 text-[10px] text-[var(--text-muted)]">
+          <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-2 py-1 flex justify-between items-center">
+            <span className="text-[var(--text-faint)]">Words</span>
+            <strong className="font-editorial-mono font-bold text-[var(--text-main)]">
+              {sentence.signals.wordCount}
+            </strong>
+          </div>
+          <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-2 py-1 flex justify-between items-center">
+            <span className="text-[var(--text-faint)]">Syl/word</span>
+            <strong className="font-editorial-mono font-bold text-[var(--text-main)]">
+              {sentence.signals.avgSyllablesPerWord}
+            </strong>
+          </div>
+          <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-2 py-1 flex justify-between items-center">
+            <span className="text-[var(--text-faint)]">Complex words</span>
+            <strong className="font-editorial-mono font-bold text-[var(--text-main)]">
+              {sentence.signals.polysyllabicWordCount}
+            </strong>
+          </div>
+          <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-2 py-1 flex justify-between items-center">
+            <span className="text-[var(--text-faint)]">Punctuation</span>
+            <strong className="font-editorial-mono font-bold text-[var(--text-main)]">
+              {sentence.signals.complexPunctuationCount}
+            </strong>
+          </div>
+        </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleCopy}
-            className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--border-strong)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--brand-emerald)]"
-            aria-label="Copy original sentence to clipboard"
-          >
-            {copied ? (
-              <>
-                <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-emerald-700 dark:text-emerald-300 font-semibold">Copied</span>
-              </>
-            ) : (
-              <>
-                <Copy className="h-3.5 w-3.5 text-[var(--text-faint)]" />
-                <span>Copy</span>
-              </>
-            )}
-          </button>
+        {/* Action Controls */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleLocate}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] py-1.5 px-2 text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--brand-emerald)] hover:bg-[var(--canvas-card-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--brand-emerald)]"
+            >
+              <Eye className="h-3.5 w-3.5 text-[var(--brand-emerald)] shrink-0" />
+              <span>{isSelected ? 'Focused in Text' : 'Locate in Text'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] py-1.5 px-2.5 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--border-strong)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--brand-emerald)] shrink-0"
+              aria-label="Copy original sentence to clipboard"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-emerald-700 dark:text-emerald-300 font-semibold">Copied</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5 text-[var(--text-faint)]" />
+                  <span>Copy</span>
+                </>
+              )}
+            </button>
+          </div>
 
           <button
             type="button"
@@ -196,7 +207,7 @@ export function SentenceCard({
               e.stopPropagation();
               onOpenRewrite(sentence);
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--brand-forest)] px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-[var(--brand-forest-hover)] active:scale-[0.98] transition-all focus-visible:ring-2 focus-visible:ring-[var(--brand-emerald)]"
+            className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--brand-forest)] py-1.5 px-3 text-xs font-semibold text-white shadow-xs hover:bg-[var(--brand-forest-hover)] active:scale-[0.98] transition-all focus-visible:ring-2 focus-visible:ring-[var(--brand-emerald)]"
             aria-label="Open rewrite assistance for this sentence"
           >
             <Wand2 className="h-3.5 w-3.5 text-[var(--brand-forest-light)]" />

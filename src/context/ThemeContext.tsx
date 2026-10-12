@@ -16,6 +16,7 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 const THEME_STORAGE_KEY = 'chapterlens-theme';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Light mode is the default for new visitors
   const [theme, setThemeState] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
 
@@ -35,17 +36,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const storedTheme = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
-      if (storedTheme === 'dark' || storedTheme === 'light') {
-        setThemeState(storedTheme);
-        applyThemeToDOM(storedTheme);
+      // Only use dark mode if explicitly stored as 'dark'. New visitors default to light!
+      if (storedTheme === 'dark') {
+        setThemeState('dark');
+        applyThemeToDOM('dark');
       } else {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const initialTheme: Theme = prefersDark ? 'dark' : 'light';
-        setThemeState(initialTheme);
-        applyThemeToDOM(initialTheme);
+        setThemeState('light');
+        applyThemeToDOM('light');
       }
     } catch {
-      // Fallback if localStorage is inaccessible
+      // Fallback: stay light
     }
     setMounted(true);
 

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { ShieldCheck, Sparkles, Compass, Sun, Moon, RotateCcw, Menu, X, BookOpen } from 'lucide-react';
-import { BrandLogo } from './BrandLogo';
+import { BrandWordmark } from './BrandLogo';
 import { useTheme } from '../context/ThemeContext';
 
 interface HeaderProps {
@@ -18,33 +18,18 @@ export function Header({ onNewAnalysis, onFocusEditor, hasAnalysis }: HeaderProp
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--border-subtle)] bg-[var(--canvas-bg)]/90 backdrop-blur-md transition-colors duration-200">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        {/* Brand identity */}
-        <div className="flex items-center gap-3">
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className="flex items-center gap-3 group focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] rounded-lg"
-            aria-label="ChapterLens Home"
-          >
-            <BrandLogo className="h-9 w-9 text-white shrink-0 group-hover:scale-105 transition-transform duration-200" />
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="font-editorial-serif text-xl font-bold tracking-tight text-[var(--text-main)]">
-                  ChapterLens
-                </span>
-                <span className="rounded-full border border-[var(--brand-accent-border)] bg-[var(--brand-accent-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--brand-accent-text)]">
-                  Editorial Studio
-                </span>
-              </div>
-              <p className="hidden text-[11px] text-[var(--text-faint)] md:block">
-                Understand your writing. Keep your voice.
-              </p>
-            </div>
-          </a>
-        </div>
+        {/* Brand identity using shared BrandWordmark */}
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="group focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] rounded-lg"
+          aria-label="ChapterLens Home"
+        >
+          <BrandWordmark size="md" />
+        </a>
 
         {/* Desktop Navigation & Actions */}
         <nav className="hidden md:flex items-center gap-4 lg:gap-6" aria-label="Main Navigation">

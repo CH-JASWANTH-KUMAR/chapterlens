@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import { DifficultSentence } from '../lib/linguistics/types';
 import { buildTextSegments } from '../lib/linguistics/highlighter';
-import { Eye, BookOpen, ExternalLink } from 'lucide-react';
+import { Eye, ExternalLink } from 'lucide-react';
 
 interface InlineHighlightedTextProps {
   originalText: string;
@@ -32,11 +32,11 @@ export function InlineHighlightedText({
   const segments = buildTextSegments(originalText, difficultSentences);
 
   const rankBadgeClasses: Record<number, string> = {
-    1: 'bg-[var(--highlight-r1-marker)] text-white',
-    2: 'bg-[var(--highlight-r2-marker)] text-white',
-    3: 'bg-[var(--highlight-r3-marker)] text-white dark:text-neutral-900',
-    4: 'bg-[var(--highlight-r4-marker)] text-white dark:text-neutral-900',
-    5: 'bg-[var(--highlight-r5-marker)] text-white dark:text-neutral-900',
+    1: 'bg-[var(--highlight-r1-marker)] text-[var(--highlight-r1-marker-text)]',
+    2: 'bg-[var(--highlight-r2-marker)] text-[var(--highlight-r2-marker-text)]',
+    3: 'bg-[var(--highlight-r3-marker)] text-[var(--highlight-r3-marker-text)]',
+    4: 'bg-[var(--highlight-r4-marker)] text-[var(--highlight-r4-marker-text)]',
+    5: 'bg-[var(--highlight-r5-marker)] text-[var(--highlight-r5-marker-text)]',
   };
 
   const selectedSentence = difficultSentences.find((s) => s.id === selectedSentenceId);
@@ -44,10 +44,10 @@ export function InlineHighlightedText({
   return (
     <section
       aria-labelledby="manuscript-preview-heading"
-      className="flex flex-col h-full rounded-2xl border border-[var(--border-subtle)] bg-[var(--canvas-card)] shadow-editorial transition-all duration-200 overflow-hidden"
+      className="flex flex-col w-full rounded-2xl border border-[var(--border-subtle)] bg-[var(--canvas-card)] shadow-editorial transition-all duration-200 overflow-hidden"
     >
       {/* Header bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-5 py-4 bg-[var(--canvas-card-subtle)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-6 py-4 bg-[var(--canvas-card-subtle)]">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--brand-accent-bg)] text-[var(--brand-emerald)] border border-[var(--brand-accent-border)]">
             <Eye className="h-4 w-4" />
@@ -55,26 +55,26 @@ export function InlineHighlightedText({
           <div>
             <h3
               id="manuscript-preview-heading"
-              className="font-editorial-serif text-lg font-bold tracking-tight text-[var(--text-main)]"
+              className="font-editorial-serif text-lg sm:text-xl font-bold tracking-tight text-[var(--text-main)]"
             >
               Manuscript Inspector
             </h3>
-            <p className="text-[11px] text-[var(--text-faint)]">
-              Original verbatim text with cognitive friction pinpoints.
+            <p className="text-xs text-[var(--text-faint)]">
+              Exact verbatim text with character-preserved friction pinpoints.
             </p>
           </div>
         </div>
 
         {/* Legend */}
         <div className="flex flex-wrap items-center gap-2 text-[11px] text-[var(--text-muted)]">
-          <span className="font-semibold text-[var(--text-main)]">Friction:</span>
-          <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold border border-[var(--highlight-r1-border)] bg-[var(--highlight-r1-bg)] text-[var(--highlight-r1-marker)]">
+          <span className="font-semibold text-[var(--text-main)] font-editorial-mono">Friction:</span>
+          <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold border border-[var(--highlight-r1-border)] bg-[var(--highlight-r1-bg)] text-[var(--highlight-r1-border)]">
             [1] Highest
           </span>
-          <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold border border-[var(--highlight-r2-border)] bg-[var(--highlight-r2-bg)] text-[var(--highlight-r2-marker)]">
+          <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold border border-[var(--highlight-r2-border)] bg-[var(--highlight-r2-bg)] text-[var(--highlight-r2-border)]">
             [2-3] Heavy
           </span>
-          <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold border border-[var(--highlight-r4-border)] bg-[var(--highlight-r4-bg)] text-[var(--highlight-r4-marker)]">
+          <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold border border-[var(--highlight-r4-border)] bg-[var(--highlight-r4-bg)] text-[var(--highlight-r4-border)]">
             [4-5] Moderate
           </span>
         </div>
@@ -82,19 +82,19 @@ export function InlineHighlightedText({
 
       {/* Selected sentence quick inspector banner */}
       {selectedSentence && (
-        <div className="border-b border-[var(--border-subtle)] bg-[var(--brand-accent-bg)]/60 px-5 py-3 transition-all duration-200">
-          <div className="flex items-start justify-between gap-3">
+        <div className="border-b border-[var(--border-subtle)] bg-[var(--brand-accent-bg)]/60 px-6 py-3 transition-all duration-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
                 <span
-                  className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shadow-xs ${
+                  className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shadow-xs select-none ${
                     rankBadgeClasses[selectedSentence.rank]
                   }`}
                 >
                   {selectedSentence.rank}
                 </span>
                 <span className="text-xs font-bold text-[var(--text-main)]">
-                  Sentence #{selectedSentence.rank} Focus
+                  Active Sentence #{selectedSentence.rank} Focus
                 </span>
                 <span className="text-xs text-[var(--text-faint)] font-editorial-mono">
                   ({selectedSentence.signals.wordCount} words · {selectedSentence.signals.polysyllabicWordCount} complex words)
@@ -109,23 +109,23 @@ export function InlineHighlightedText({
                 const card = document.getElementById(`card-${selectedSentence.id}`);
                 card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
               }}
-              className="shrink-0 inline-flex items-center gap-1 text-xs text-[var(--brand-emerald)] hover:underline font-semibold pt-1"
+              className="shrink-0 inline-flex items-center gap-1.5 text-xs text-[var(--brand-emerald)] hover:underline font-semibold"
             >
-              <span>Inspect Card</span>
+              <span>Jump to Sentence Card</span>
               <ExternalLink className="h-3 w-3" />
             </button>
           </div>
         </div>
       )}
 
-      {/* Manuscript Content Display Area */}
+      {/* Manuscript Content Display Area (Full Width, comfortable reading line length) */}
       <div
         ref={containerRef}
         tabIndex={0}
         aria-label="Manuscript viewer with interactive difficulty highlights"
-        className="flex-1 max-h-[640px] overflow-y-auto custom-scrollbar p-6 sm:p-8 focus-visible:outline-none bg-[var(--canvas-card)]"
+        className="max-h-[580px] overflow-y-auto custom-scrollbar p-6 sm:p-8 lg:p-10 focus-visible:outline-none bg-[var(--canvas-card)]"
       >
-        <div className="font-editorial-serif text-[17px] sm:text-[18px] leading-[1.9] text-[var(--text-main)] whitespace-pre-wrap selection:bg-[var(--selection-bg)] selection:text-[var(--selection-text)]">
+        <div className="max-w-4xl mx-auto font-editorial-serif text-[17px] sm:text-[18px] leading-[1.9] text-[var(--text-main)] whitespace-pre-wrap selection:bg-[var(--selection-bg)] selection:text-[var(--selection-text)]">
           {segments.map((segment, index) => {
             if (!segment.isDifficult || !segment.difficultSentence) {
               return <span key={index}>{segment.text}</span>;
@@ -143,11 +143,17 @@ export function InlineHighlightedText({
                 role="button"
                 aria-pressed={isSelected}
                 aria-label={`Sentence rank ${rank} difficult: ${sentence.text}`}
-                onClick={() => onSelectSentence(sentence)}
+                onClick={() => {
+                  onSelectSentence(sentence);
+                  const card = document.getElementById(`card-${sentence.id}`);
+                  card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     onSelectSentence(sentence);
+                    const card = document.getElementById(`card-${sentence.id}`);
+                    card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                   }
                 }}
                 className={`sentence-highlight sentence-highlight-rank-${rank} ${

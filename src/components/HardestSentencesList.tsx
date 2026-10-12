@@ -21,8 +21,8 @@ export function HardestSentencesList({
   onOpenRewrite,
 }: HardestSentencesListProps) {
   return (
-    <section aria-labelledby="hardest-sentences-heading" className="space-y-4">
-      {/* Header bar matching the height of manuscript inspector */}
+    <section aria-labelledby="hardest-sentences-heading" className="space-y-5">
+      {/* Header bar */}
       <div className="flex flex-col gap-2 border-b border-[var(--border-subtle)] pb-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
@@ -32,20 +32,20 @@ export function HardestSentencesList({
             <div>
               <h3
                 id="hardest-sentences-heading"
-                className="font-editorial-serif text-lg sm:text-xl font-bold tracking-tight text-[var(--text-main)]"
+                className="font-editorial-serif text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]"
               >
-                The {sentences.length} Most Difficult Sentences
+                Difficult Sentences Ranked by Friction
               </h3>
             </div>
           </div>
 
-          <span className="rounded-full border border-[var(--brand-accent-border)] bg-[var(--brand-accent-bg)] px-2.5 py-0.5 text-xs font-semibold text-[var(--brand-accent-text)]">
-            Ranked by Friction
+          <span className="rounded-full border border-[var(--brand-accent-border)] bg-[var(--brand-accent-bg)] px-3 py-1 text-xs font-semibold text-[var(--brand-accent-text)]">
+            Showing {sentences.length} {sentences.length === 1 ? 'Candidate' : 'Candidates'}
           </span>
         </div>
 
-        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-          Sentences exhibiting the highest combined load of word cadence, syllable weight, polysyllabic density, and punctuation fragmentation.
+        <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
+          Sentences carrying the highest combined cognitive friction load across word cadence, syllable weight, polysyllabic density, and syntactic fragmentation.
         </p>
 
         {totalSentencesInText < 5 && (
@@ -58,7 +58,7 @@ export function HardestSentencesList({
         )}
       </div>
 
-      {/* Sentence Cards List */}
+      {/* Responsive Horizontal Card Grid */}
       {sentences.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-[var(--border-strong)] p-10 text-center text-sm text-[var(--text-faint)] bg-[var(--canvas-card)]">
           <Sparkles className="mx-auto h-8 w-8 text-[var(--text-faint)] mb-2 opacity-50" />
@@ -66,7 +66,7 @@ export function HardestSentencesList({
           <p className="text-xs mt-1">The chapter prose is exceptionally brief or uniformly accessible.</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-5 sm:gap-6 items-stretch">
           {sentences.map((sentence) => (
             <SentenceCard
               key={sentence.id}

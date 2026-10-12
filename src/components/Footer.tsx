@@ -11,12 +11,12 @@ export function Footer() {
 
   return (
     <footer className="border-t border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] text-[var(--text-muted)] transition-colors duration-200">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
           {/* Brand & Manifesto */}
           <div className="md:col-span-5 space-y-3">
             <div className="flex items-center gap-2.5">
-              <BrandLogo className="h-7 w-7 text-white" size={28} />
+              <BrandLogo size={28} />
               <span className="font-editorial-serif text-lg font-bold text-[var(--text-main)]">
                 ChapterLens
               </span>
@@ -25,7 +25,7 @@ export function Footer() {
               </span>
             </div>
             <p className="font-editorial-serif text-sm italic text-[var(--text-main)]">
-              “Understand your writing. Keep your voice.”
+              &ldquo;Understand your writing. Keep your voice.&rdquo;
             </p>
             <p className="text-xs leading-relaxed text-[var(--text-faint)]">
               An editorial analysis studio designed for novelists, essayists, students, and independent authors seeking clarity without sacrificing stylistic identity.
