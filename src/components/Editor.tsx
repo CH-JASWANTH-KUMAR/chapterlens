@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { SAMPLE_PASSAGES, SamplePassage } from '../lib/linguistics/samples';
-import { extractWords } from '../lib/linguistics/segmenter';
-import { Sparkles, Trash2, BookMarked, ShieldCheck, CornerDownLeft, AlertCircle } from 'lucide-react';
+import { extractWords, segmentText } from '../lib/linguistics/segmenter';
+import { Sparkles, Trash2, BookMarked, ShieldCheck, CornerDownLeft, AlertCircle, Info, X } from 'lucide-react';
 
 interface EditorProps {
   text: string;
@@ -21,17 +21,21 @@ export function Editor({
   onClear,
 }: EditorProps) {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const [selectedSampleId, setSelectedSampleId] = useState<string>('');
+  const [selectedSample, setSelectedSample] = useState<SamplePassage | null>(null);
 
-  // Live lightweight metrics
-  const words = extractWords(text);
-  const wordCount = words.length;
-  const charCount = text.length;
-
-  // Approximate sentence count for live counter
-  const sentenceCount = text.trim()
-    ? (text.match(/[^.!?…\n]+[.!?…]+|[^.!?…\n]+$/g) || []).length
-    : 0;
+  // Accurate live metrics matching linguistics engine
+  const { wordCount, sentenceCount, charCount } = useMemo(() => {
+    if (!text.trim()) {
+      return { wordCount: 0, sentenceCount: 0, charCount: text.length };
+    }
+    const words = extractWords(text);
+    const sentences = segmentText(text);
+    return {
+      wordCount: words.length,
+      sentenceCount: sentences.length,
+      charCount: text.length,
+    };
+  }, [text]);
 
   // Handle keyboard shortcut: Cmd+Enter or Ctrl+Enter to trigger analysis
   useEffect(() => {
@@ -48,14 +52,14 @@ export function Editor({
   }, [text, isAnalyzing, onAnalyze]);
 
   const handleSelectSample = (sample: SamplePassage) => {
-    setSelectedSampleId(sample.id);
+    setSelectedSample(sample);
     onChangeText(sample.text);
   };
 
   const handleConfirmClear = () => {
     onClear();
     setShowClearConfirm(false);
-    setSelectedSampleId('');
+    setSelectedSample(null);
   };
 
   return (
@@ -88,8 +92,8 @@ export function Editor({
                   type="button"
                   onClick={() => handleSelectSample(sample)}
                   className={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
-                    selectedSampleId === sample.id
-                      ? 'border-[#1A3C2D] bg-[#EBF1ED] text-[#1A3C2D]'
+                    selectedSample?.id === sample.id
+                      ? 'border-[#1A3C2D] bg-[#EBF1ED] text-[#1A3C2D] font-semibold'
                       : 'border-[#E6E4D9] bg-[#FBFBF9] text-[#5E6460] hover:border-[#CDC9B8] hover:text-[#1C1E1D]'
                   }`}
                   title={sample.description}
@@ -134,6 +138,25 @@ export function Editor({
           )}
         </div>
 
+        {/* Sample notification banner if sample was loaded */}
+        {selectedSample && (
+          <div className="flex items-center justify-between border-b border-[#E6E4D9] bg-[#EBF1ED]/80 px-4 py-2 text-xs text-[#1A3C2D]">
+            <div className="flex items-center gap-2">
+              <Info className="h-4 w-4 shrink-0 text-[#1A3C2D]" />
+              <span>
+                <strong>Demonstration Passage Loaded:</strong> “{selectedSample.title}” ({selectedSample.genre}). Fictional example text for instant testing. Edit freely or click <strong>Analyze chapter</strong>.
+              </span>
+            </div>
+            <button
+              onClick={() => setSelectedSample(null)}
+              className="rounded p-0.5 text-[#5E6460] hover:text-[#1C1E1D]"
+              aria-label="Dismiss demo passage notice"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+
         {/* Textarea Area */}
         <div className="relative p-4 sm:p-6">
           <label htmlFor="chapter-text-input" className="sr-only">
@@ -144,7 +167,7 @@ export function Editor({
             value={text}
             onChange={(e) => {
               onChangeText(e.target.value);
-              setSelectedSampleId('');
+              setSelectedSample(null);
             }}
             placeholder="Paste your chapter manuscript or short story here...
 

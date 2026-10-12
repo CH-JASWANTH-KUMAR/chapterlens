@@ -29,6 +29,22 @@ describe('Rewrite API Route (/api/rewrite)', () => {
     expect(data.provider).toBe('Google Gemini');
   });
 
+  it('GET /api/rewrite reports OpenAI provider when OPENAI_API_KEY is configured', async () => {
+    process.env.OPENAI_API_KEY = 'test-openai-key';
+    const res = await GET();
+    const data = await res.json();
+    expect(data.available).toBe(true);
+    expect(data.provider).toBe('OpenAI');
+  });
+
+  it('GET /api/rewrite reports Anthropic provider when ANTHROPIC_API_KEY is configured', async () => {
+    process.env.ANTHROPIC_API_KEY = 'test-anthropic-key';
+    const res = await GET();
+    const data = await res.json();
+    expect(data.available).toBe(true);
+    expect(data.provider).toBe('Anthropic');
+  });
+
   it('POST /api/rewrite validates missing sentence payload', async () => {
     const req = new NextRequest('http://localhost:3000/api/rewrite', {
       method: 'POST',

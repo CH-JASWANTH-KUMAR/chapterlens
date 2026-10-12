@@ -242,6 +242,14 @@ export function countSyllablesInWord(word: string): number {
   if (!clean) return 0;
   if (clean.length <= 2) return 1;
 
+  // Handle compound hyphenated words (e.g., hair-thin, well-known)
+  if (clean.includes('-')) {
+    const parts = clean.split('-').filter(Boolean);
+    if (parts.length > 1) {
+      return parts.reduce((sum, part) => sum + countSyllablesInWord(part), 0);
+    }
+  }
+
   // 1. Direct dictionary check
   if (Object.prototype.hasOwnProperty.call(SYLLABLE_EXCEPTIONS, clean)) {
     return SYLLABLE_EXCEPTIONS[clean];

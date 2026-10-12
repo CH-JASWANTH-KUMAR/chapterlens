@@ -26,6 +26,7 @@ export function InlineHighlightedText({
     const el = document.getElementById(`highlight-${selectedSentenceId}`);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.focus({ preventScroll: true });
     }
   }, [selectedSentenceId]);
 

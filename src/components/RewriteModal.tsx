@@ -102,23 +102,77 @@ export function RewriteModal({ sentence, onClose }: RewriteModalProps) {
           </p>
         </div>
 
+        {/* Deterministic Editing Suggestion (Always Available & 100% Private) */}
+        {sentence.suggestedRewrite ? (
+          <div className="mt-5 rounded-xl border border-[#CBD9D0] bg-[#F4F8F5] p-4 text-left">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#D8E6DC] pb-2">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="h-4 w-4 text-[#1A3C2D]" />
+                <span className="text-xs font-bold text-[#1A3C2D]">
+                  Deterministic Editing Tip (Rule-Based · Offline)
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleCopySuggestion(sentence.suggestedRewrite!, 100)}
+                className="inline-flex items-center gap-1 rounded border border-[#CBD9D0] bg-white px-2.5 py-1 text-xs font-medium text-[#1A3C2D] hover:bg-[#EBF1ED] transition-colors"
+                aria-label="Copy deterministic rewrite suggestion"
+              >
+                {copiedIndex === 100 ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-emerald-600" />
+                    <span className="text-emerald-700 font-semibold">Copied suggestion</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5" />
+                    <span>Copy suggestion</span>
+                  </>
+                )}
+              </button>
+            </div>
+            <div className="mt-2.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#537562]">
+                Suggested Revision:
+              </span>
+              <p className="mt-1 font-editorial-serif text-[15px] leading-relaxed text-[#1C1E1D]">
+                “{sentence.suggestedRewrite}”
+              </p>
+            </div>
+            {sentence.editorialTip && (
+              <p className="mt-2 text-xs text-[#424744]">
+                <strong>Diagnostic action:</strong> {sentence.editorialTip}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="mt-5 rounded-xl border border-[#CBD9D0] bg-[#F4F8F5] p-4 text-left">
+            <span className="text-xs font-bold text-[#1A3C2D]">
+              Deterministic Editing Tip (Rule-Based · Offline)
+            </span>
+            <p className="mt-1 text-xs text-[#2C302E]">
+              {sentence.editorialTip || sentence.explanation}
+            </p>
+          </div>
+        )}
+
         {/* Manual Craft Guidelines (Always Available Offline) */}
-        <div className="mt-5 rounded-xl border border-[#CBD9D0] bg-[#EBF1ED]/50 p-4">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#1A3C2D]">
-            Craft Heuristics for Authors
+        <div className="mt-5 rounded-xl border border-[#E6E4D9] bg-[#FBFBF9] p-4">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#424744]">
+            Authorial Craft Checkpoints
           </h4>
-          <ul className="mt-2 space-y-1.5 text-xs text-[#2C302E]">
+          <ul className="mt-2 space-y-1.5 text-xs text-[#5E6460]">
             <li className="flex items-start gap-1.5">
               <span className="font-bold text-[#1A3C2D]">•</span>
-              <span><strong>Split at the pivot:</strong> Locate the primary conjunction or semicolon and turn one 40-word sentence into two punchy 20-word statements.</span>
+              <span><strong>Split at the pivot:</strong> Locate the primary conjunction or semicolon to turn one long sentence into two punchy statements.</span>
             </li>
             <li className="flex items-start gap-1.5">
               <span className="font-bold text-[#1A3C2D]">•</span>
-              <span><strong>Swap multisyllabic terms:</strong> Replace formal Latinate vocabulary with direct Anglo-Saxon roots (e.g. "utilize" → "use", "intermittent" → "broken").</span>
+              <span><strong>Swap multisyllabic terms:</strong> Replace formal Latinate vocabulary with direct Anglo-Saxon roots (e.g., &quot;utilize&quot; → &quot;use&quot;).</span>
             </li>
             <li className="flex items-start gap-1.5">
               <span className="font-bold text-[#1A3C2D]">•</span>
-              <span><strong>Eliminate parenthetical asides:</strong> Pull em dashes or bracketed thoughts into their own independent sentence to let the reader breathe.</span>
+              <span><strong>Eliminate parenthetical asides:</strong> Pull em dashes or bracketed thoughts into their own independent sentence to give the reader a breath.</span>
             </li>
           </ul>
         </div>
@@ -133,7 +187,7 @@ export function RewriteModal({ sentence, onClose }: RewriteModalProps) {
 
             <div className="flex items-center gap-1 text-[11px] text-[#7A817D]">
               <Shield className="h-3 w-3 text-[#537562]" />
-              <span>Sends only this sentence</span>
+              <span>Sends only this single sentence</span>
             </div>
           </div>
 
@@ -146,11 +200,14 @@ export function RewriteModal({ sentence, onClose }: RewriteModalProps) {
                 <span>AI Rewriting Service Not Configured</span>
               </div>
               <p className="mt-1">
-                ChapterLens is operating in 100% private, offline mode without an external API key. Your entire analysis is computed securely inside your browser. To enable optional AI suggestions, provide an API key in your deployment environment.
+                ChapterLens operates 100% privately in offline mode without requiring external API keys. All readability scores and deterministic editing tips above run inside your browser. To enable optional AI suggestions, configure GEMINI_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY in your deployment environment.
               </p>
             </div>
           ) : (
             <div className="mt-3 space-y-3">
+              <p className="text-[11px] text-[#537562]">
+                Connected provider: <strong>{apiStatus.provider || 'AI Provider'}</strong>. Click below to generate 2 alternative cadences.
+              </p>
               {suggestions.length === 0 && !loading && (
                 <button
                   onClick={handleRequestRewrite}

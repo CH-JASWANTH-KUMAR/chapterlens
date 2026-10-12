@@ -3,39 +3,16 @@ import { countSyllablesInWord, isPolysyllabic } from './syllables';
 
 // Known abbreviations that end in a period and should not trigger a sentence break
 const COMMON_ABBREVIATIONS = new Set([
-  'mr',
-  'mrs',
-  'ms',
-  'dr',
-  'prof',
-  'sr',
-  'jr',
-  'rev',
-  'gen',
-  'col',
-  'capt',
-  'lt',
-  'st',
-  'mt',
-  'etc',
-  'eg',
-  'ie',
-  'vs',
-  'fig',
-  'vol',
-  'dept',
-  'est',
-  'approx',
-  'al',
-  'cf',
-  'ca',
-  'us',
-  'uk',
-  'un',
-  'eu',
-  'dc',
-  'ny',
-  'no',
+  'mr', 'mrs', 'ms', 'dr', 'prof', 'sr', 'jr', 'rev', 'gen', 'col', 'capt', 'lt',
+  'sgt', 'gov', 'sen', 'rep', 'pres', 'fr', 'br', 'hon', 'maj', 'cpl', 'pvt', 'adm',
+  'cmdr', 'supt', 'insp', 'det', 'st', 'mt', 'etc', 'eg', 'ie', 'vs', 'fig', 'vol',
+  'dept', 'est', 'approx', 'al', 'cf', 'ca', 'us', 'uk', 'un', 'eu', 'dc', 'ny', 'no',
+]);
+
+const TITLE_ABBREVIATIONS = new Set([
+  'mr', 'mrs', 'ms', 'dr', 'prof', 'rev', 'sr', 'jr', 'st', 'mt', 'col', 'gen',
+  'capt', 'lt', 'sgt', 'gov', 'sen', 'rep', 'pres', 'fr', 'br', 'hon', 'maj',
+  'cpl', 'pvt', 'adm', 'cmdr', 'supt', 'insp', 'det',
 ]);
 
 /**
@@ -153,7 +130,7 @@ export function segmentText(originalText: string): SentenceToken[] {
       // Check for trailing quotation marks / brackets right after terminator
       while (
         terminatorEndIndex < textLength &&
-        /['"”’\)\]}]/.test(originalText[terminatorEndIndex])
+        /['"”’»›\)\]}]/.test(originalText[terminatorEndIndex])
       ) {
         terminatorEndIndex++;
       }
@@ -163,23 +140,24 @@ export function segmentText(originalText: string): SentenceToken[] {
         // Extract preceding word token
         const textBefore = originalText.slice(currentSentenceStart, currentIndex);
         const lastWordMatch = textBefore.match(/([A-Za-z]+)$/);
-        if (lastWordMatch && isAbbreviation(lastWordMatch[1])) {
-          // If followed by space and lowercase letter or comma, it is an abbreviation in sentence
-          const afterTerminator = originalText.slice(terminatorEndIndex).trimStart();
-          if (afterTerminator.length > 0) {
-            const nextChar = afterTerminator[0];
-            // If next token begins with lowercase, it is NOT sentence boundary
-            if (nextChar >= 'a' && nextChar <= 'z') {
-              currentIndex = terminatorEndIndex;
-              continue;
-            }
-            // If it's a known title like "Dr." or "Mr." followed by a capital name, don't split!
-            const cleanAbbr = lastWordMatch[1].toLowerCase();
-            if (
-              ['mr', 'mrs', 'ms', 'dr', 'prof', 'rev', 'sr', 'jr', 'st', 'col', 'gen', 'capt', 'lt'].includes(cleanAbbr)
-            ) {
-              currentIndex = terminatorEndIndex;
-              continue;
+        if (lastWordMatch) {
+          const cleanAbbr = lastWordMatch[1].toLowerCase();
+          const isMultiDotAbbr = /(?:^|\s|\()(?:e\.g|i\.e|vs|cf|al)$/i.test(textBefore);
+
+          if (isAbbreviation(cleanAbbr) || isMultiDotAbbr) {
+            const afterTerminator = originalText.slice(terminatorEndIndex).trimStart();
+            if (afterTerminator.length > 0) {
+              const nextChar = afterTerminator[0];
+              // If next token begins with lowercase, it is NOT sentence boundary
+              if (nextChar >= 'a' && nextChar <= 'z') {
+                currentIndex = terminatorEndIndex;
+                continue;
+              }
+              // If it's a known title like "Dr." or "Mr." or multi-dot abbreviation like "e.g.", don't split!
+              if (TITLE_ABBREVIATIONS.has(cleanAbbr) || isMultiDotAbbr) {
+                currentIndex = terminatorEndIndex;
+                continue;
+              }
             }
           }
         }
@@ -189,8 +167,12 @@ export function segmentText(originalText: string): SentenceToken[] {
       // If punctuation was inside quotes and what follows on the same line starts with a lowercase letter,
       // it is a dialogue speech tag (e.g. "Wait!" said John, "Stop!" she screamed, “Voilà!” she cried).
       const remainder = originalText.slice(terminatorEndIndex);
-      const isQuoteTerminated = /['"”’]/.test(originalText[terminatorEndIndex - 1]);
+      const isQuoteTerminated = /['"”’»›]/.test(originalText[terminatorEndIndex - 1]);
       if (isQuoteTerminated) {
+        if (remainder.startsWith('—') || remainder.startsWith('--')) {
+          currentIndex = terminatorEndIndex;
+          continue;
+        }
         const trimmedRemainder = remainder.trimStart();
         const leadingWhitespace = remainder.slice(0, remainder.length - trimmedRemainder.length);
         if (leadingWhitespace.indexOf('\n') === -1 && trimmedRemainder.length > 0) {

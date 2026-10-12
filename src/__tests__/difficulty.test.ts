@@ -59,4 +59,26 @@ describe('Difficulty Ranking & Multi-Signal Heuristic', () => {
     expect(topSentences[0].rank).toBe(1);
     expect(topSentences[1].rank).toBe(2);
   });
+
+  it('generates deterministic suggested rewrites for semicolon pivot sentences', () => {
+    const text = 'The escapement arbor had a fracture; an imperceptible flaw would cause the assembly to seize.';
+    const tokens = segmentText(text);
+    const hardest = identifyHardestSentences(tokens, 1);
+
+    expect(hardest).toHaveLength(1);
+    expect(hardest[0].editorialTip).toBeDefined();
+    expect(hardest[0].suggestedRewrite).toBeDefined();
+    expect(hardest[0].suggestedRewrite).toContain('.');
+    expect(hardest[0].editorialTip).toContain('Split at the semicolon');
+  });
+
+  it('generates deterministic vocabulary substitutions for dense academic words', () => {
+    const text = 'The team commenced subterranean exploration to utilize new sensors.';
+    const tokens = segmentText(text);
+    const hardest = identifyHardestSentences(tokens, 1);
+
+    expect(hardest[0].suggestedRewrite).toBeDefined();
+    expect(hardest[0].suggestedRewrite).toContain('underground');
+    expect(hardest[0].suggestedRewrite).toContain('use');
+  });
 });

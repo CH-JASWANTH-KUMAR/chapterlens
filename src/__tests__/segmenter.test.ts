@@ -75,4 +75,22 @@ describe('Sentence Segmentation & Offset Preservation Engine', () => {
     expect(words).toContain('trembling');
     expect(words).toContain('held');
   });
+
+  it('handles multi-dot abbreviations followed by capitalized proper nouns without false breaks', () => {
+    const text = 'The instructor cited classic playwrights, e.g. Shakespeare and Marlowe. The class took notes.';
+    const sentences = segmentText(text);
+
+    expect(sentences).toHaveLength(2);
+    expect(sentences[0].text).toBe('The instructor cited classic playwrights, e.g. Shakespeare and Marlowe.');
+    expect(sentences[1].text).toBe('The class took notes.');
+  });
+
+  it('handles dialogue exclamation tags followed by speech verbs without premature fragment splits', () => {
+    const text = '“Wait!” whispered Elena from the shadowed doorway. Marcus froze in place.';
+    const sentences = segmentText(text);
+
+    expect(sentences).toHaveLength(2);
+    expect(sentences[0].text).toBe('“Wait!” whispered Elena from the shadowed doorway.');
+    expect(sentences[1].text).toBe('Marcus froze in place.');
+  });
 });

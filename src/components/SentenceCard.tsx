@@ -94,10 +94,15 @@ export function SentenceCard({
       </div>
 
       {/* Honest Diagnostic Explanation */}
-      <div className="mt-3.5 rounded-lg bg-[#F5F4EE] p-3 text-xs text-[#424744]">
+      <div className="mt-3.5 rounded-lg bg-[#F5F4EE] p-3 text-xs text-[#424744] space-y-1.5">
         <p className="leading-normal">
           <strong className="text-[#1C1E1D]">Diagnostic:</strong> {sentence.explanation}
         </p>
+        {sentence.editorialTip && (
+          <p className="text-[#1A3C2D] font-medium leading-normal border-t border-[#E6E4D9]/80 pt-1.5">
+            <strong>Editing tip:</strong> {sentence.editorialTip}
+          </p>
+        )}
       </div>
 
       {/* Contributing Signals Breakdown */}

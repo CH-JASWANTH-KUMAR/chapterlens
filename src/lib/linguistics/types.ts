@@ -36,6 +36,7 @@ export interface DifficultSentence {
   primaryIssue: 'length' | 'vocabulary' | 'structure' | 'combination';
   signals: ContributingSignals;
   suggestedRewrite?: string;
+  editorialTip?: string;
 }
 
 export interface ReadabilityBand {

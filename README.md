@@ -130,23 +130,26 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 # Optional: OpenAI API key (alternative provider)
 OPENAI_API_KEY=your_openai_api_key_here
+
+# Optional: Anthropic API key (alternative provider)
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
 ```
 
-When no API key is provided, the UI clearly and honestly explains that the app is in 100% private offline mode and presents editorial craft guidelines instead.
+When no API key is provided, ChapterLens generates useful deterministic editing guidance and rule-based suggested rewrites 100% offline in your browser, clearly labeled as editorial tips rather than AI rewrites.
 
 ---
 
 ## 🧪 Testing Verification
 
-ChapterLens includes 54 automated tests across 8 test suites:
+ChapterLens includes 60 automated tests across 8 test suites:
 - `flesch.test.ts`: Formula accuracy, mathematical clamping, reading time estimation
-- `syllables.test.ts`: Phonetic rules, silent letters, diphthongs, syllabic consonants (`-sm`)
-- `segmenter.test.ts`: Abbreviations, initials, decimal numbers, dialogue quotes, paragraph index preservation
-- `difficulty.test.ts`: Multi-signal scoring, feature normalization, deterministic tie-breaking
+- `syllables.test.ts`: Phonetic rules, silent letters, diphthongs, syllabic consonants (`-sm`), compound hyphenated words
+- `segmenter.test.ts`: Abbreviations, initials, decimal numbers, dialogue quotes, paragraph index preservation, em-dash clauses
+- `difficulty.test.ts`: Multi-signal scoring, feature normalization, deterministic tie-breaking, rule-based rewrites and editorial tips
 - `highlighter.test.ts`: Non-destructive character reconstruction, repeated identical sentences
 - `analyzer.test.ts`: Whole-chapter orchestrator, statistical reliability bounds
 - `edge_cases.test.ts`: 18 linguistic edge cases (empty input, fragments, large chapters, Unicode)
-- `api_rewrite.test.ts`: Server-side privacy boundaries, character limits, error handling
+- `api_rewrite.test.ts`: Server-side privacy boundaries, multi-provider validation, character limits, error handling
 
 ---
 
