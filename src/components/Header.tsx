@@ -1,7 +1,9 @@
 'use client';
 
-import React from 'react';
-import { BookOpen, ShieldCheck, Sparkles, Compass } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShieldCheck, Sparkles, Compass, Sun, Moon, RotateCcw, Menu, X, BookOpen } from 'lucide-react';
+import { BrandLogo } from './BrandLogo';
+import { useTheme } from '../context/ThemeContext';
 
 interface HeaderProps {
   onNewAnalysis?: () => void;
@@ -10,72 +12,180 @@ interface HeaderProps {
 }
 
 export function Header({ onNewAnalysis, onFocusEditor, hasAnalysis }: HeaderProps) {
+  const { theme, toggleTheme, mounted } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#E6E4D9] bg-[#FBFBF9]/95 backdrop-blur-sm transition-colors">
+    <header className="sticky top-0 z-40 w-full border-b border-[var(--border-subtle)] bg-[var(--canvas-bg)]/90 backdrop-blur-md transition-colors duration-200">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         {/* Brand identity */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#1A3C2D] text-[#FBFBF9] shadow-sm">
-            <BookOpen className="h-5 w-5" strokeWidth={2.2} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-editorial-serif text-xl font-bold tracking-tight text-[#1C1E1D]">
-                ChapterLens
-              </span>
-              <span className="hidden rounded-full border border-[#CBD9D0] bg-[#EBF1ED] px-2 py-0.5 text-[11px] font-medium text-[#1A3C2D] sm:inline-block">
-                Editorial Studio
-              </span>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="flex items-center gap-3 group focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] rounded-lg"
+            aria-label="ChapterLens Home"
+          >
+            <BrandLogo className="h-9 w-9 text-white shrink-0 group-hover:scale-105 transition-transform duration-200" />
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <span className="font-editorial-serif text-xl font-bold tracking-tight text-[var(--text-main)]">
+                  ChapterLens
+                </span>
+                <span className="rounded-full border border-[var(--brand-accent-border)] bg-[var(--brand-accent-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--brand-accent-text)]">
+                  Editorial Studio
+                </span>
+              </div>
+              <p className="hidden text-[11px] text-[var(--text-faint)] md:block">
+                Understand your writing. Keep your voice.
+              </p>
             </div>
-            <p className="hidden text-xs text-[#5E6460] md:block">
-              Understand your writing. Keep your voice.
-            </p>
-          </div>
+          </a>
         </div>
 
-        {/* Navigation & Trust Badges */}
-        <nav className="flex items-center gap-3 sm:gap-6" aria-label="Main Navigation">
+        {/* Desktop Navigation & Actions */}
+        <nav className="hidden md:flex items-center gap-4 lg:gap-6" aria-label="Main Navigation">
           <a
             href="#how-it-works"
-            className="hidden text-xs font-medium text-[#424744] transition-colors hover:text-[#1A3C2D] sm:inline-flex items-center gap-1.5"
+            className="text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] inline-flex items-center gap-1.5 focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] rounded px-1"
           >
-            <Compass className="h-3.5 w-3.5 text-[#537562]" />
-            Methodology
+            <Compass className="h-3.5 w-3.5 text-[var(--brand-emerald)]" />
+            <span>Methodology</span>
           </a>
           <a
             href="#about-scoring"
-            className="hidden text-xs font-medium text-[#424744] transition-colors hover:text-[#1A3C2D] md:inline-block"
+            className="text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] inline-flex items-center gap-1.5 focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] rounded px-1"
           >
-            Readability Scale
+            <BookOpen className="h-3.5 w-3.5 text-[var(--text-faint)]" />
+            <span>Readability Scale</span>
           </a>
 
           {/* Privacy badge */}
-          <div className="flex items-center gap-1.5 rounded-full border border-[#E6E4D9] bg-[#F5F4EE] px-2.5 py-1 text-xs font-medium text-[#2C302E]">
-            <ShieldCheck className="h-3.5 w-3.5 text-[#1A3C2D]" />
-            <span className="text-[11px] sm:text-xs">Free · Private · In-Browser</span>
+          <div className="hidden lg:flex items-center gap-1.5 rounded-full border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] px-2.5 py-1 text-xs font-medium text-[var(--text-muted)]">
+            <ShieldCheck className="h-3.5 w-3.5 text-[var(--brand-emerald)]" />
+            <span className="text-[11px]">Free · Private · In-Browser</span>
           </div>
 
-          {/* Actions */}
+          {/* Theme Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] text-[var(--text-main)] shadow-xs transition-colors hover:bg-[var(--canvas-card-hover)] hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)]"
+            aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+          >
+            {mounted ? (
+              theme === 'dark' ? (
+                <Sun className="h-4 w-4 text-amber-400 transition-transform duration-300 rotate-0 hover:rotate-45" />
+              ) : (
+                <Moon className="h-4 w-4 text-[var(--brand-forest)] transition-transform duration-300 rotate-0 hover:-rotate-12" />
+              )
+            ) : (
+              <span className="h-4 w-4" />
+            )}
+          </button>
+
+          {/* Contextual New Analysis button */}
           {hasAnalysis && (
             <button
               onClick={onNewAnalysis}
-              className="inline-flex items-center gap-1.5 rounded-md border border-[#CDC9B8] bg-white px-3 py-1.5 text-xs font-semibold text-[#1C1E1D] shadow-xs transition-all hover:bg-[#F5F4EE] hover:border-[#1A3C2D] focus-visible:outline-2 focus-visible:outline-[#1A3C2D]"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-strong)] bg-[var(--canvas-card)] px-3 py-1.5 text-xs font-semibold text-[var(--text-main)] shadow-xs transition-colors hover:bg-[var(--canvas-card-hover)] hover:border-[var(--brand-emerald)] focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)]"
               aria-label="Start new chapter analysis"
             >
-              New Analysis
+              <RotateCcw className="h-3 w-3 text-[var(--brand-emerald)]" />
+              <span>New Analysis</span>
+            </button>
+          )}
+
+          {/* Editor Focus Button */}
+          <button
+            onClick={onFocusEditor}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--brand-forest)] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-[var(--brand-forest-hover)] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)]"
+            aria-label="Focus manuscript editor"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-[var(--brand-forest-light)]" />
+            <span>Editor</span>
+          </button>
+        </nav>
+
+        {/* Mobile Header Controls */}
+        <div className="flex md:hidden items-center gap-2">
+          {/* Theme Toggle Mobile */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] text-[var(--text-main)] shadow-xs"
+            aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4 text-amber-400" />
+            ) : (
+              <Moon className="h-4 w-4 text-[var(--brand-forest)]" />
+            )}
+          </button>
+
+          {hasAnalysis && (
+            <button
+              onClick={onNewAnalysis}
+              className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-2.5 py-1 text-xs font-semibold text-[var(--text-main)]"
+              aria-label="New analysis"
+            >
+              <RotateCcw className="h-3 w-3 text-[var(--brand-emerald)]" />
+              <span>Reset</span>
             </button>
           )}
 
           <button
-            onClick={onFocusEditor}
-            className="inline-flex items-center gap-1.5 rounded-md bg-[#1A3C2D] px-3.5 py-1.5 text-xs font-semibold text-[#FBFBF9] shadow-xs transition-all hover:bg-[#122B20] focus-visible:outline-2 focus-visible:outline-[#1A3C2D]"
-            aria-label="Focus manuscript editor"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] text-[var(--text-main)]"
+            aria-label="Toggle mobile menu"
+            aria-expanded={mobileMenuOpen}
           >
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Editor</span>
+            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>
-        </nav>
+        </div>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-[var(--border-subtle)] bg-[var(--canvas-card)] px-4 py-3 space-y-3 transition-all animate-in slide-in-from-top-2 duration-150">
+          <div className="flex flex-col gap-2.5 text-xs font-medium text-[var(--text-muted)]">
+            <a
+              href="#how-it-works"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 py-1.5 hover:text-[var(--text-main)]"
+            >
+              <Compass className="h-4 w-4 text-[var(--brand-emerald)]" />
+              <span>Methodology</span>
+            </a>
+            <a
+              href="#about-scoring"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 py-1.5 hover:text-[var(--text-main)]"
+            >
+              <BookOpen className="h-4 w-4 text-[var(--text-faint)]" />
+              <span>Readability Scale</span>
+            </a>
+            <div className="flex items-center gap-2 py-1.5 text-[var(--text-faint)] border-t border-[var(--border-subtle)] pt-2">
+              <ShieldCheck className="h-4 w-4 text-[var(--brand-emerald)]" />
+              <span>100% In-Browser Privacy</span>
+            </div>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onFocusEditor?.();
+              }}
+              className="w-full mt-1 flex items-center justify-center gap-1.5 rounded-lg bg-[var(--brand-forest)] py-2 text-xs font-semibold text-white shadow-xs"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-[var(--brand-forest-light)]" />
+              <span>Go to Editor</span>
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

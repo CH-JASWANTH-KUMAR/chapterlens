@@ -1,67 +1,81 @@
 'use client';
 
 import React from 'react';
-import { BookOpen, ShieldCheck, Heart } from 'lucide-react';
+import { ShieldCheck, ArrowUp } from 'lucide-react';
+import { BrandLogo } from './BrandLogo';
 
 export function Footer() {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <footer className="border-t border-[#E6E4D9] bg-[#F5F4EE] text-[#5E6460]">
+    <footer className="border-t border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] text-[var(--text-muted)] transition-colors duration-200">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
           {/* Brand & Manifesto */}
           <div className="md:col-span-5 space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded bg-[#1A3C2D] text-white">
-                <BookOpen className="h-4 w-4" />
-              </div>
-              <span className="font-editorial-serif text-lg font-bold text-[#1C1E1D]">
+            <div className="flex items-center gap-2.5">
+              <BrandLogo className="h-7 w-7 text-white" size={28} />
+              <span className="font-editorial-serif text-lg font-bold text-[var(--text-main)]">
                 ChapterLens
               </span>
+              <span className="rounded-full border border-[var(--brand-accent-border)] bg-[var(--brand-accent-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--brand-accent-text)]">
+                Editorial Studio
+              </span>
             </div>
-            <p className="font-editorial-serif text-sm italic text-[#424744]">
+            <p className="font-editorial-serif text-sm italic text-[var(--text-main)]">
               “Understand your writing. Keep your voice.”
             </p>
-            <p className="text-xs leading-relaxed text-[#5E6460]">
+            <p className="text-xs leading-relaxed text-[var(--text-faint)]">
               An editorial analysis studio designed for novelists, essayists, students, and independent authors seeking clarity without sacrificing stylistic identity.
             </p>
           </div>
 
-          {/* Privacy & Engine Pledge */}
+          {/* Privacy & Local Processing Pledge */}
           <div className="md:col-span-4 space-y-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#1C1E1D]">
-              Privacy & Local Processing
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-main)] font-editorial-mono">
+              Privacy & Local Execution
             </h4>
-            <div className="flex items-start gap-2 text-xs text-[#5E6460]">
-              <ShieldCheck className="h-4 w-4 shrink-0 text-[#1A3C2D] mt-0.5" />
+            <div className="flex items-start gap-2 text-xs text-[var(--text-muted)] leading-relaxed">
+              <ShieldCheck className="h-4 w-4 shrink-0 text-[var(--brand-emerald)] mt-0.5" />
               <p>
-                Your manuscript is analyzed exclusively in client-side memory. No tracking cookies, no server uploads, no local storage persistence, and zero retention.
+                Your chapter is analyzed exclusively in client-side memory. Zero tracking cookies, zero cloud uploads, zero local storage persistence, and zero retention.
               </p>
             </div>
           </div>
 
           {/* Methodology */}
           <div className="md:col-span-3 space-y-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#1C1E1D]">
-              Methodology
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-main)] font-editorial-mono">
+              Linguistic Engine
             </h4>
-            <p className="text-xs text-[#5E6460] leading-relaxed">
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
               Built on Rudolf Flesch’s 1948 Reading Ease formula paired with composite linguistic tokenization and deterministic syllable estimation.
             </p>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-8 border-t border-[#E6E4D9] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#7A817D]">
+        <div className="mt-8 border-t border-[var(--border-subtle)] pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-faint)]">
           <div>
-            © {new Date().getFullYear()} ChapterLens Editorial Studio. Open, private readability tooling.
+            © {new Date().getFullYear()} ChapterLens Editorial Studio. Open, client-side readability tooling.
           </div>
-          <div className="flex items-center gap-4">
-            <a href="#how-it-works" className="hover:text-[#1A3C2D]">
+          <div className="flex items-center gap-5">
+            <a href="#how-it-works" className="hover:text-[var(--text-main)] transition-colors">
               Methodology
             </a>
-            <a href="#about-scoring" className="hover:text-[#1A3C2D]">
+            <a href="#about-scoring" className="hover:text-[var(--text-main)] transition-colors">
               Scoring Scale
             </a>
+            <button
+              onClick={scrollToTop}
+              className="inline-flex items-center gap-1 hover:text-[var(--text-main)] transition-colors"
+              aria-label="Scroll back to top"
+            >
+              <span>Back to Top</span>
+              <ArrowUp className="h-3 w-3" />
+            </button>
           </div>
         </div>
       </div>

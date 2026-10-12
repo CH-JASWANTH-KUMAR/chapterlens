@@ -9,7 +9,7 @@ import { EducationalSection } from './EducationalSection';
 import { RewriteModal } from './RewriteModal';
 import { analyzeChapter } from '../lib/linguistics/analyzer';
 import { AnalysisResult, DifficultSentence } from '../lib/linguistics/types';
-import { ArrowLeft, RotateCcw, Columns, AlignLeft, ListOrdered } from 'lucide-react';
+import { RotateCcw, Columns, AlignLeft, Layers } from 'lucide-react';
 
 interface WorkspaceProps {
   onAnalysisStateChange?: (hasAnalysis: boolean) => void;
@@ -30,7 +30,6 @@ export function Workspace({ onAnalysisStateChange }: WorkspaceProps) {
     if (!text.trim()) return;
     setIsAnalyzing(true);
 
-    // Perform analysis
     try {
       const result = analyzeChapter(text);
       setAnalysis(result);
@@ -91,26 +90,26 @@ export function Workspace({ onAnalysisStateChange }: WorkspaceProps) {
           aria-label="Chapter Readability Results"
           className="space-y-8 animate-in fade-in duration-300"
         >
-          {/* Action bar above results */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E6E4D9] pb-4">
+          {/* Action & View Controls Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
             <div className="flex items-center gap-2">
               <button
                 onClick={handleNewAnalysis}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#CDC9B8] bg-white px-3 py-1.5 text-xs font-semibold text-[#1C1E1D] shadow-xs hover:bg-[#F5F4EE] hover:border-[#1A3C2D] focus-visible:outline-2 focus-visible:outline-[#1A3C2D]"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-strong)] bg-[var(--canvas-card)] px-3 py-1.5 text-xs font-semibold text-[var(--text-main)] shadow-editorial-sm hover:bg-[var(--canvas-card-hover)] hover:border-[var(--brand-emerald)] focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] transition-colors"
               >
-                <RotateCcw className="h-3.5 w-3.5 text-[#537562]" />
+                <RotateCcw className="h-3.5 w-3.5 text-[var(--brand-emerald)]" />
                 <span>Reset / Edit Chapter</span>
               </button>
             </div>
 
-            {/* Desktop Layout Toggle */}
-            <div className="hidden lg:flex items-center gap-1 rounded-lg border border-[#E6E4D9] bg-[#F5F4EE] p-0.5 text-xs">
+            {/* Desktop Layout View Toggle */}
+            <div className="hidden lg:flex items-center gap-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] p-1 text-xs">
               <button
                 onClick={() => setDesktopLayout('split')}
-                className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
                   desktopLayout === 'split'
-                    ? 'bg-white text-[#1A3C2D] shadow-xs font-semibold'
-                    : 'text-[#5E6460] hover:text-[#1C1E1D]'
+                    ? 'bg-[var(--canvas-card)] text-[var(--brand-accent-text)] shadow-xs font-semibold border border-[var(--border-subtle)]'
+                    : 'text-[var(--text-faint)] hover:text-[var(--text-main)]'
                 }`}
                 aria-label="Side-by-side view"
               >
@@ -119,10 +118,10 @@ export function Workspace({ onAnalysisStateChange }: WorkspaceProps) {
               </button>
               <button
                 onClick={() => setDesktopLayout('stacked')}
-                className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
                   desktopLayout === 'stacked'
-                    ? 'bg-white text-[#1A3C2D] shadow-xs font-semibold'
-                    : 'text-[#5E6460] hover:text-[#1C1E1D]'
+                    ? 'bg-[var(--canvas-card)] text-[var(--brand-accent-text)] shadow-xs font-semibold border border-[var(--border-subtle)]'
+                    : 'text-[var(--text-faint)] hover:text-[var(--text-main)]'
                 }`}
                 aria-label="Stacked view"
               >
@@ -135,7 +134,7 @@ export function Workspace({ onAnalysisStateChange }: WorkspaceProps) {
           {/* Readability Scorecard */}
           <ScoreCard analysis={analysis} />
 
-          {/* Sentence Analysis: Responsive Two-Column or Stacked */}
+          {/* Core Analysis Workspace: 2-Column Split or Stacked */}
           {desktopLayout === 'split' ? (
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
               {/* Left Column: Inline Highlighted Manuscript */}
