@@ -254,6 +254,8 @@ describe('Guided Research Reading (Milestone 2)', () => {
     });
 
     it('POST /api/explain returns 503 when no AI provider key is configured on deployment', async () => {
+      const fetchSpy = vi.fn();
+      global.fetch = fetchSpy;
       const req = new NextRequest('http://localhost:3000/api/explain', {
         method: 'POST',
         body: JSON.stringify({
@@ -266,10 +268,13 @@ describe('Guided Research Reading (Milestone 2)', () => {
       const data = await res.json();
       expect(data.available).toBe(false);
       expect(data.error).toContain('No AI explanation API key');
+      expect(fetchSpy).not.toHaveBeenCalled();
     });
 
     it('POST /api/explain returns 503 when GEMINI_API_KEY is only a placeholder', async () => {
       process.env.GEMINI_API_KEY = 'replace_with_your_gemini_api_key';
+      const fetchSpy = vi.fn();
+      global.fetch = fetchSpy;
       const req = new NextRequest('http://localhost:3000/api/explain', {
         method: 'POST',
         body: JSON.stringify({
@@ -282,6 +287,27 @@ describe('Guided Research Reading (Milestone 2)', () => {
       const data = await res.json();
       expect(data.available).toBe(false);
       expect(data.error).toContain('No AI explanation API key');
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('POST /api/explain rejects alternative placeholder forms without invoking fetch', async () => {
+      for (const placeholder of ['your_gemini_api_key_here', 'replace_with_something', '   ']) {
+        process.env.GEMINI_API_KEY = placeholder;
+        const fetchSpy = vi.fn();
+        global.fetch = fetchSpy;
+        const req = new NextRequest('http://localhost:3000/api/explain', {
+          method: 'POST',
+          body: JSON.stringify({
+            selectedPassage: 'We propose the Transformer architecture.',
+            level: 'beginner',
+          }),
+        });
+        const res = await POST(req);
+        expect(res.status).toBe(503);
+        const data = await res.json();
+        expect(data.available).toBe(false);
+        expect(fetchSpy).not.toHaveBeenCalled();
+      }
     });
   });
 
@@ -368,10 +394,16 @@ describe('Guided Research Reading (Milestone 2)', () => {
       expect(explanation.comprehensionCheck).toBeDefined();
       expect(explanation.comprehensionCheck?.question).toContain('How does the Transformer process');
       expect(explanation.comprehensionCheck?.answer).toBeDefined();
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('models/gemini-3.8-flash:generateContent?key=mock-gemini-key'),
-        expect.anything()
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      const [calledUrl, calledOptions] = (global.fetch as any).mock.calls[0];
+      expect(calledUrl).toBe(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent'
       );
+      expect(calledUrl).not.toContain('?key=');
+      expect(calledUrl).not.toContain('mock-gemini-key');
+      expect(calledOptions.headers).toHaveProperty('x-goog-api-key', 'mock-gemini-key');
+      expect(calledOptions.headers['Content-Type']).toBe('application/json');
+      expect(JSON.stringify(body)).not.toContain('mock-gemini-key');
     });
 
     it('uses GEMINI_MODEL override in POST /api/explain when provided', async () => {
@@ -401,10 +433,14 @@ describe('Guided Research Reading (Milestone 2)', () => {
 
       const res = await POST(req);
       expect(res.status).toBe(200);
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('models/gemini-custom-flash:generateContent?key=mock-gemini-key'),
-        expect.anything()
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      const [calledUrl, calledOptions] = (global.fetch as any).mock.calls[0];
+      expect(calledUrl).toBe(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-custom-flash:generateContent'
       );
+      expect(calledUrl).not.toContain('?key=');
+      expect(calledUrl).not.toContain('mock-gemini-key');
+      expect(calledOptions.headers).toHaveProperty('x-goog-api-key', 'mock-gemini-key');
     });
 
     it('caps prerequisite concepts to at most 3', async () => {
@@ -630,7 +666,7 @@ describe('Guided Research Reading (Milestone 2)', () => {
         ok: false,
         status: 400,
         text: async () =>
-          'Invalid argument: https://generativelanguage.googleapis.com/v1beta/models?key=AIzaSySecretApiKey123 failed',
+          'Invalid argument: https://generativelanguage.googleapis.com/v1beta/models?key=AIzaSySecretApiKey123 failed with x-goog-api-key: AIzaSyHeaderSecret456 and raw mock-gemini-key',
       } as any);
 
       const req = new NextRequest('http://localhost:3000/api/explain', {
@@ -644,7 +680,90 @@ describe('Guided Research Reading (Milestone 2)', () => {
       expect(res.status).toBe(502);
       const data = await res.json();
       expect(data.error).not.toContain('AIzaSySecretApiKey123');
+      expect(data.error).not.toContain('AIzaSyHeaderSecret456');
+      expect(data.error).not.toContain('mock-gemini-key');
       expect(data.error).toContain('key=[REDACTED]');
+      expect(data.error).toContain('x-goog-api-key: [REDACTED]');
+    });
+
+    it('sanitizes unexpected internal runtime errors so API keys are never leaked in 500 responses', async () => {
+      global.fetch = vi.fn().mockImplementation(() => {
+        throw new Error('Connection crashed while using header x-goog-api-key: mock-gemini-key');
+      });
+
+      const req = new NextRequest('http://localhost:3000/api/explain', {
+        method: 'POST',
+        body: JSON.stringify({
+          selectedPassage: 'Sample passage.',
+        }),
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(500);
+      const data = await res.json();
+      expect(data.error).not.toContain('mock-gemini-key');
+      expect(data.error).toContain('x-goog-api-key: [REDACTED]');
+    });
+
+    it('proves request URL never contains API key and x-goog-api-key receives configured key without leaking to client', async () => {
+      process.env.GEMINI_API_KEY = 'super-secret-gemini-key-999';
+      let capturedUrl = '';
+      let capturedOptions: any = null;
+
+      global.fetch = vi.fn().mockImplementation(async (url: string, opts: any) => {
+        capturedUrl = url;
+        capturedOptions = opts;
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            candidates: [
+              {
+                content: {
+                  parts: [
+                    {
+                      text: JSON.stringify({
+                        explanation: 'Verification passed.',
+                        terms: [],
+                        contextFit: '',
+                        prerequisites: [],
+                      }),
+                    },
+                  ],
+                },
+              },
+            ],
+          }),
+        };
+      });
+
+      const req = new NextRequest('http://localhost:3000/api/explain', {
+        method: 'POST',
+        body: JSON.stringify({
+          selectedPassage: 'Testing secure authentication.',
+          level: 'beginner',
+        }),
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+
+      // Proves URL never contains API key
+      expect(capturedUrl).not.toContain('super-secret-gemini-key-999');
+      expect(capturedUrl).not.toContain('?key=');
+      expect(capturedUrl).not.toContain('key=');
+      expect(capturedUrl).toBe(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent'
+      );
+
+      // Proves x-goog-api-key header receives the configured key
+      expect(capturedOptions.headers['x-goog-api-key']).toBe('super-secret-gemini-key-999');
+      expect(capturedOptions.headers['Content-Type']).toBe('application/json');
+
+      // Proves API key never appears in client response
+      const serializedResponse = JSON.stringify(data);
+      expect(serializedResponse).not.toContain('super-secret-gemini-key-999');
     });
   });
 

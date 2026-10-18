@@ -60,6 +60,29 @@ export async function GET() {
  * at Beginner, Step-by-Step, or Technical comprehension levels.
  */
 export async function POST(req: NextRequest) {
+  const geminiKey = getValidApiKey(process.env.GEMINI_API_KEY);
+  const openaiKey = getValidApiKey(process.env.OPENAI_API_KEY);
+  const anthropicKey = getValidApiKey(process.env.ANTHROPIC_API_KEY);
+
+  const sanitizeErrorMessage = (msg: string): string => {
+    if (!msg) return 'An error occurred while communicating with the AI service.';
+    let sanitized = msg
+      .replace(/key=[a-zA-Z0-9_\-]+/gi, 'key=[REDACTED]')
+      .replace(/Bearer\s+[a-zA-Z0-9_\-]+/gi, 'Bearer [REDACTED]')
+      .replace(/x-goog-api-key['"]?\s*[:=]\s*['"]?[a-zA-Z0-9_\-]+/gi, 'x-goog-api-key: [REDACTED]')
+      .replace(/x-api-key['"]?\s*[:=]\s*['"]?[a-zA-Z0-9_\-]+/gi, 'x-api-key: [REDACTED]');
+    if (geminiKey && geminiKey.length > 3) {
+      sanitized = sanitized.replaceAll(geminiKey, '[REDACTED]');
+    }
+    if (openaiKey && openaiKey.length > 3) {
+      sanitized = sanitized.replaceAll(openaiKey, '[REDACTED]');
+    }
+    if (anthropicKey && anthropicKey.length > 3) {
+      sanitized = sanitized.replaceAll(anthropicKey, '[REDACTED]');
+    }
+    return sanitized;
+  };
+
   try {
     const body = (await req.json()) as ExplainRequestPayload;
 
@@ -96,10 +119,6 @@ export async function POST(req: NextRequest) {
         : 'beginner';
 
     const conceptToExplore = typeof body.conceptToExplore === 'string' ? body.conceptToExplore.trim() : undefined;
-
-    const geminiKey = getValidApiKey(process.env.GEMINI_API_KEY);
-    const openaiKey = getValidApiKey(process.env.OPENAI_API_KEY);
-    const anthropicKey = getValidApiKey(process.env.ANTHROPIC_API_KEY);
 
     if (!geminiKey && !openaiKey && !anthropicKey) {
       return NextResponse.json(
@@ -178,14 +197,6 @@ Respond with pure JSON matching the requested schema.`;
       }
     };
 
-    const sanitizeErrorMessage = (msg: string): string => {
-      if (!msg) return 'An error occurred while communicating with the AI service.';
-      return msg
-        .replace(/key=[a-zA-Z0-9_\-]+/gi, 'key=[REDACTED]')
-        .replace(/Bearer\s+[a-zA-Z0-9_\-]+/gi, 'Bearer [REDACTED]')
-        .replace(/x-api-key['"]?\s*[:=]\s*['"]?[a-zA-Z0-9_\-]+/gi, 'x-api-key: [REDACTED]');
-    };
-
     const parseUpstreamError = async (response: Response, provider: string): Promise<string> => {
       let detail = '';
       try {
@@ -206,10 +217,13 @@ Respond with pure JSON matching the requested schema.`;
     if (geminiKey) {
       const geminiModel = process.env.GEMINI_MODEL?.trim() || DEFAULT_GEMINI_MODEL;
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModel)}:generateContent?key=${geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModel)}:generateContent`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': geminiKey,
+          },
           signal: AbortSignal.timeout(15000),
           body: JSON.stringify({
             contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
@@ -384,10 +398,7 @@ Respond with pure JSON matching the requested schema.`;
         { status: 504 }
       );
     }
-    const safeError = (error?.message || 'Internal server error while generating explanation.')
-      .replace(/key=[a-zA-Z0-9_\-]+/gi, 'key=[REDACTED]')
-      .replace(/Bearer\s+[a-zA-Z0-9_\-]+/gi, 'Bearer [REDACTED]')
-      .replace(/x-api-key['"]?\s*[:=]\s*['"]?[a-zA-Z0-9_\-]+/gi, 'x-api-key: [REDACTED]');
+    const safeError = sanitizeErrorMessage(error?.message || 'Internal server error while generating explanation.');
     return NextResponse.json(
       { error: safeError },
       { status: 500 }

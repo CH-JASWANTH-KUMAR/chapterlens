@@ -49,7 +49,7 @@ ChapterLens is engineered with privacy as a foundational requirement:
 1. **100% In-Browser Document Parsing**: PDFs (`pdfjs-dist`), Word documents (`mammoth`), plain text files, and pasted manuscripts are parsed entirely locally in your browser. Document files and raw manuscripts are **never uploaded to any server**.
 2. **Explicit User Consent Gate**: Before any AI explanation request is made, a transparent disclosure modal displays exactly what data will be transmitted and why. Transmission only occurs upon explicit user confirmation (`chapterlens-ai-consent` in session storage).
 3. **Strict Minimum Context Transmission**: The application **never transmits the full document**. Outbound requests send only the selected passage and its immediate surrounding paragraph, strictly capped at **1,200 characters**.
-4. **Server-Side API Key Isolation**: All provider credentials (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) remain strictly server-side in Next.js API routes (`/api/explain`, `/api/rewrite`). No keys are exposed to client-side bundles.
+4. **Server-Side API Key Isolation & Header Authentication**: All provider credentials (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) remain strictly server-side in Next.js API routes (`/api/explain`, `/api/rewrite`). Requests to Google Gemini authenticate exclusively via the official `x-goog-api-key` HTTP header rather than URL query parameters, preventing key leakage in proxy logs or browser histories. No keys are exposed to client-side bundles.
 5. **Private Offline Fallback**: If no AI provider is configured in the environment, ChapterLens operates 100% offline. Document importation, outline navigation, reading, and readability analysis remain fully operational.
 
 ---
