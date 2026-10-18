@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 interface RewriteRequestBody {
   sentence: string;
+  consentConfirmed?: boolean;
   context?: string;
   style?: 'clear' | 'concise' | 'literary';
 }
@@ -35,7 +36,7 @@ export async function GET() {
 /**
  * POST /api/rewrite
  * Rewrites a single difficult sentence using configured LLM provider.
- * Strictly limits payload to the single sentence to preserve user privacy.
+ * Strictly limits payload to the single sentence and verifies explicit user consent.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -48,6 +49,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Strict privacy boundary: explicit user consent is required before any transmission
+    if (body.consentConfirmed !== true) {
+      return NextResponse.json(
+        {
+          error:
+            'Explicit user consent is required before transmitting manuscript text to an external AI provider.',
+        },
+        { status: 403 }
+      );
+    }
+
     const trimmedSentence = body.sentence.trim();
     if (!trimmedSentence) {
       return NextResponse.json(
@@ -56,7 +68,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Safety limit: don't accept whole chapters into single sentence rewrite
+    // Safety limit: don't accept whole chapters into single sentence rewrite (max 1,200 chars)
     if (trimmedSentence.length > 1200) {
       return NextResponse.json(
         { error: 'Sentence exceeds maximum allowable length of 1,200 characters.' },
@@ -79,13 +91,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const systemPrompt = `You are an expert literary copyeditor. Your mission is to provide 2 distinct, simplified alternatives to a difficult sentence from a manuscript.
-Rules:
-1. Maintain the author's exact voice, point of view (1st/3rd person), tense, character names, and core meaning.
-2. Reduce cognitive load by untangling complex clauses or reducing polysyllabic density.
-3. Never invent new plot details or alter emotional tone.
-4. Return exactly two options: Option A (Direct and Clear) and Option B (Rhythmic and Cadenced).
-Output format: JSON object with keys "options" (array of 2 strings) and "rationale" (string explaining what friction was reduced).`;
+    const systemPrompt = `You are a distinguished research copyeditor and linguistic specialist. Your goal is to optimize a difficult, high-friction sentence from a manuscript or scholarly document for clarity and cadence.
+
+Rigorous Editorial Principles:
+1. Preserve Meaning & Truth: Retain the author's exact thesis, nuance, tone, and technical precision. Do not oversimplify in a way that distorts meaning or changes scientific facts.
+2. Preserve Crucial Elements: Retain all uncertainty qualifications (e.g., "may", "suggests", "estimated"), numerical findings, equations, citations, specialized terminology, and named entities.
+3. Eliminate Cognitive Friction: Untangle nested clauses, clarify convoluted pronoun references, and break up excessive modifier stacking.
+4. Do Not Optimize Blindly for Flesch: Readability must not sacrifice conceptual accuracy.
+
+Output Format:
+Return a JSON object with:
+- "options": An array containing exactly 2 string revisions:
+  - Option A (Direct & Clear): Emphasizes direct syntactic structure and immediate readability.
+  - Option B (Rhythmic & Cadenced): Emphasizes natural cadence and balanced clauses for effortless reading.
+- "rationale": A concise sentence explaining what syntactic friction was relieved.
+- "preservedElements": A short string summarizing key terminology, qualifiers, or citations preserved.`;
 
     const userPrompt = `${systemPrompt}\n\nOriginal Sentence to simplify:\n"${trimmedSentence}"\n\nReturn JSON only.`;
 
@@ -171,6 +191,7 @@ Output format: JSON object with keys "options" (array of 2 strings) and "rationa
             available: true,
             suggestions: parsed.options || (parsed.suggestion ? [parsed.suggestion] : []),
             rationale: parsed.rationale || 'Simplified clause structure.',
+            preservedElements: parsed.preservedElements || null,
           });
         }
       }
@@ -219,6 +240,7 @@ Output format: JSON object with keys "options" (array of 2 strings) and "rationa
             available: true,
             suggestions: parsed.options || (parsed.suggestion ? [parsed.suggestion] : []),
             rationale: parsed.rationale || 'Reduced sentence complexity.',
+            preservedElements: parsed.preservedElements || null,
           });
         }
       }
@@ -270,6 +292,7 @@ Output format: JSON object with keys "options" (array of 2 strings) and "rationa
             available: true,
             suggestions: parsed.options || (parsed.suggestion ? [parsed.suggestion] : []),
             rationale: parsed.rationale || 'Reduced sentence complexity.',
+            preservedElements: parsed.preservedElements || null,
           });
         }
       }

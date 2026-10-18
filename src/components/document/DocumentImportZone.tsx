@@ -24,6 +24,7 @@ import {
   DocumentValidationError,
 } from '../../lib/document/types';
 import { ExtractionAlert } from './ExtractionAlert';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface DocumentImportZoneProps {
   onDocumentExtracted: (doc: ExtractedDocument) => void;
@@ -155,154 +156,183 @@ export function DocumentImportZone({
         tabIndex={-1}
       />
 
-      {/* Main Drag & Drop Card */}
-      <div
+      {/* Main Drag & Drop Card with Motion feedback */}
+      <motion.div
+        animate={{
+          scale: isDragging ? 1.012 : 1,
+        }}
+        transition={{ duration: 0.18, ease: 'easeOut' }}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={`relative rounded-2xl border-2 border-dashed p-8 sm:p-12 text-center transition-all duration-200 ${
           isDragging
-            ? 'border-[var(--brand-emerald)] bg-[var(--brand-accent-bg)] shadow-editorial-elevated scale-[1.005]'
+            ? 'border-[var(--brand-emerald)] bg-[var(--brand-accent-bg)] shadow-editorial-elevated'
             : 'border-[var(--border-strong)] bg-[var(--canvas-card)] hover:border-[var(--brand-emerald)]/70 hover:bg-[var(--canvas-card-subtle)]'
         }`}
       >
-        {isExtracting ? (
-          /* Live Extraction Progress State */
-          <div className="mx-auto max-w-md space-y-5 animate-in fade-in">
-            <div className="flex h-14 w-14 mx-auto items-center justify-center rounded-2xl bg-[var(--brand-accent-bg)] text-[var(--brand-emerald)] border border-[var(--brand-accent-border)] shadow-xs animate-pulse">
-              <Loader2 className="h-7 w-7 animate-spin" />
-            </div>
-
-            <div className="space-y-1.5">
-              <h3 className="font-editorial-serif text-lg sm:text-xl font-bold text-[var(--text-main)]">
-                Extracting Document Text...
-              </h3>
-              <p className="text-xs text-[var(--text-muted)] font-editorial-mono">
-                {progress?.message || 'Processing manuscript structure locally in browser...'}
-              </p>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="w-full rounded-full bg-[var(--canvas-card-subtle)] border border-[var(--border-subtle)] p-1">
-              <div
-                className="h-2 rounded-full bg-[var(--brand-emerald)] transition-all duration-300 ease-out"
-                style={{ width: `${progress?.percent || 15}%` }}
-              />
-            </div>
-
-            <div className="flex items-center justify-between text-[11px] font-editorial-mono text-[var(--text-faint)]">
-              <span>{progress?.percent || 15}% Complete</span>
-              {progress?.currentPage && progress?.totalPages && (
-                <span>
-                  Page {progress.currentPage} / {progress.totalPages}
-                </span>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={handleCancelExtraction}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-strong)] bg-[var(--canvas-card)] px-4 py-2 text-xs font-semibold text-[var(--text-muted)] hover:text-rose-600 hover:border-rose-300 dark:hover:text-rose-400 transition-colors focus-visible:outline-2 focus-visible:outline-rose-500"
+        <AnimatePresence mode="wait">
+          {isExtracting ? (
+            /* Live Extraction Progress State */
+            <motion.div
+              key="extracting-state"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.18 }}
+              className="mx-auto max-w-md space-y-5"
             >
-              <X className="h-3.5 w-3.5" />
-              <span>Cancel Extraction</span>
-            </button>
-          </div>
-        ) : (
-          /* Default File Drop & Pick State */
-          <div className="mx-auto max-w-xl space-y-5">
-            <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-[var(--brand-accent-bg)] text-[var(--brand-emerald)] border border-[var(--brand-accent-border)] shadow-xs">
-              <UploadCloud className="h-8 w-8" />
-            </div>
+              <div className="flex h-14 w-14 mx-auto items-center justify-center rounded-2xl bg-[var(--brand-accent-bg)] text-[var(--brand-emerald)] border border-[var(--brand-accent-border)] shadow-xs animate-pulse">
+                <Loader2 className="h-7 w-7 animate-spin" />
+              </div>
 
-            <div className="space-y-1.5">
-              <h3
-                id="document-import-heading"
-                className="font-editorial-serif text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]"
-              >
-                Drag and drop your manuscript file here
-              </h3>
-              <p className="text-xs sm:text-sm text-[var(--text-muted)] max-w-md mx-auto leading-relaxed">
-                Import chapters, research papers, or essays directly into the readability engine.
-              </p>
-            </div>
+              <div className="space-y-1.5">
+                <h3 className="font-editorial-serif text-lg sm:text-xl font-bold text-[var(--text-main)]">
+                  Extracting Document Text...
+                </h3>
+                <p className="text-xs text-[var(--text-muted)] font-editorial-mono">
+                  {progress?.message || 'Processing manuscript structure locally in browser...'}
+                </p>
+              </div>
 
-            {/* File Picker Button & Action Hierarchy */}
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+              {/* Progress Bar */}
+              <div className="w-full rounded-full bg-[var(--canvas-card-subtle)] border border-[var(--border-subtle)] p-1">
+                <div
+                  className="h-2 rounded-full bg-[var(--brand-emerald)] transition-all duration-300 ease-out"
+                  style={{ width: `${progress?.percent || 15}%` }}
+                />
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] font-editorial-mono text-[var(--text-faint)]">
+                <span>{progress?.percent || 15}% Complete</span>
+                {progress?.currentPage && progress?.totalPages && (
+                  <span>
+                    Page {progress.currentPage} / {progress.totalPages}
+                  </span>
+                )}
+              </div>
+
               <button
                 type="button"
-                id="browse-files-button"
-                onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-forest)] px-5 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-editorial transition-all hover:bg-[var(--brand-forest-hover)] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)]"
+                onClick={handleCancelExtraction}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-strong)] bg-[var(--canvas-card)] px-4 py-2 text-xs font-semibold text-[var(--text-muted)] hover:text-rose-600 hover:border-rose-300 dark:hover:text-rose-400 transition-colors focus-visible:outline-2 focus-visible:outline-rose-500"
               >
-                <FileText className="h-4 w-4 text-[var(--brand-forest-light)]" />
-                <span>Browse Files on Device</span>
+                <X className="h-3.5 w-3.5" />
+                <span>Cancel Extraction</span>
               </button>
+            </motion.div>
+          ) : (
+            /* Default File Drop & Pick State */
+            <motion.div
+              key="drop-idle-state"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.18 }}
+              className="mx-auto max-w-xl space-y-5"
+            >
+              <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-[var(--brand-accent-bg)] text-[var(--brand-emerald)] border border-[var(--brand-accent-border)] shadow-xs">
+                <UploadCloud className="h-8 w-8" />
+              </div>
 
-              {onLoadSample && (
+              <div className="space-y-1.5">
+                <h3
+                  id="document-import-heading"
+                  className="font-editorial-serif text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]"
+                >
+                  Drag and drop your manuscript file here
+                </h3>
+                <p className="text-xs sm:text-sm text-[var(--text-muted)] max-w-md mx-auto leading-relaxed">
+                  Import chapters, research papers, or essays directly into the readability engine.
+                </p>
+              </div>
+
+              {/* File Picker Button & Action Hierarchy */}
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
                 <button
                   type="button"
-                  id="load-sample-document-button"
-                  onClick={onLoadSample}
-                  className="inline-flex items-center gap-2 rounded-xl border border-[var(--brand-accent-border)] bg-[var(--brand-accent-bg)] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--brand-accent-text)] hover:bg-[var(--brand-accent-bg)]/80 hover:border-[var(--brand-emerald)] shadow-xs transition-all active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)]"
+                  id="browse-files-button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-forest)] px-5 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-editorial transition-all hover:bg-[var(--brand-forest-hover)] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)]"
                 >
-                  <FlaskConical className="h-4 w-4 text-[var(--brand-emerald)]" />
-                  <span>Try Sample Research Paper</span>
+                  <FileText className="h-4 w-4 text-[var(--brand-forest-light)]" />
+                  <span>Browse Files on Device</span>
                 </button>
-              )}
 
-              <button
-                type="button"
-                id="switch-to-paste-button"
-                onClick={onSwitchToPaste}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-strong)] bg-[var(--canvas-card)] px-4 py-2.5 text-xs sm:text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--brand-emerald)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)]"
-              >
-                <span>Or Paste Text Directly</span>
-              </button>
-            </div>
+                {onLoadSample && (
+                  <button
+                    type="button"
+                    id="load-sample-document-button"
+                    onClick={onLoadSample}
+                    className="inline-flex items-center gap-2 rounded-xl border border-[var(--brand-accent-border)] bg-[var(--brand-accent-bg)] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--brand-accent-text)] hover:bg-[var(--brand-accent-bg)]/80 hover:border-[var(--brand-emerald)] shadow-xs transition-all active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)]"
+                  >
+                    <FlaskConical className="h-4 w-4 text-[var(--brand-emerald)]" />
+                    <span>Try Sample Research Paper</span>
+                  </button>
+                )}
 
-            {/* Format Chips & Badges */}
-            <div className="pt-3 border-t border-[var(--border-subtle)] max-w-lg mx-auto">
-              <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-editorial-mono">
-                <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] px-2.5 py-1 text-[var(--text-muted)]">
-                  <FileType className="h-3.5 w-3.5 text-red-500" />
-                  <strong>.PDF</strong> (Selectable text)
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] px-2.5 py-1 text-[var(--text-muted)]">
-                  <FileText className="h-3.5 w-3.5 text-blue-500" />
-                  <strong>.DOCX</strong> (Word)
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] px-2.5 py-1 text-[var(--text-muted)]">
-                  <FileCode className="h-3.5 w-3.5 text-emerald-500" />
-                  <strong>.TXT</strong> (Plain text)
-                </span>
+                <button
+                  type="button"
+                  id="switch-to-paste-button"
+                  onClick={onSwitchToPaste}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-strong)] bg-[var(--canvas-card)] px-4 py-2.5 text-xs sm:text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--brand-emerald)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)]"
+                >
+                  <span>Or Paste Text Directly</span>
+                </button>
               </div>
 
-              {/* Explicit OCR Limitation Note */}
-              <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-[var(--text-faint)] leading-normal">
-                <Info className="h-3.5 w-3.5 shrink-0 text-[var(--brand-emerald)]" />
-                <span>
-                  Text-based PDF extraction only. Scanned image PDFs requiring OCR are not supported. Max {formatFileSize(MAX_FILE_SIZE_BYTES)}.
-                </span>
+              {/* Format Chips & Badges */}
+              <div className="pt-3 border-t border-[var(--border-subtle)] max-w-lg mx-auto">
+                <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-editorial-mono">
+                  <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] px-2.5 py-1 text-[var(--text-muted)]">
+                    <FileType className="h-3.5 w-3.5 text-red-500" />
+                    <strong>.PDF</strong> (Selectable text)
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] px-2.5 py-1 text-[var(--text-muted)]">
+                    <FileText className="h-3.5 w-3.5 text-blue-500" />
+                    <strong>.DOCX</strong> (Word)
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] px-2.5 py-1 text-[var(--text-muted)]">
+                    <FileCode className="h-3.5 w-3.5 text-emerald-500" />
+                    <strong>.TXT</strong> (Plain text)
+                  </span>
+                </div>
+
+                {/* Explicit OCR Limitation Note */}
+                <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-[var(--text-faint)] leading-normal">
+                  <Info className="h-3.5 w-3.5 shrink-0 text-[var(--brand-emerald)]" />
+                  <span>
+                    Text-based PDF extraction only. Scanned image PDFs requiring OCR are not supported. Max {formatFileSize(MAX_FILE_SIZE_BYTES)}.
+                  </span>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
-      </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* Error / Validation Alert Banner */}
-      {error && (
-        <ExtractionAlert
-          message={error.message}
-          recoveryGuidance={error.guidance}
-          code={error.code}
-          onDismiss={() => setError(null)}
-          onRetry={() => {
-            setError(null);
-            fileInputRef.current?.click();
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18 }}
+          >
+            <ExtractionAlert
+              message={error.message}
+              recoveryGuidance={error.guidance}
+              code={error.code}
+              onDismiss={() => setError(null)}
+              onRetry={() => {
+                setError(null);
+                fileInputRef.current?.click();
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Privacy Guarantee Reassurance */}
       <div className="flex items-center justify-center sm:justify-start gap-2 text-xs text-[var(--text-muted)] pt-1">

@@ -34,6 +34,18 @@ export function Header({ onNewAnalysis, onFocusEditor, hasAnalysis }: HeaderProp
         {/* Desktop Navigation & Actions */}
         <nav className="hidden md:flex items-center gap-4 lg:gap-6" aria-label="Main Navigation">
           <a
+            href="#analysis-results"
+            className="text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] inline-flex items-center gap-1.5 focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] rounded px-1"
+          >
+            <span>Readability Audit</span>
+          </a>
+          <a
+            href="#guided-reading-workspace"
+            className="text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] inline-flex items-center gap-1.5 focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] rounded px-1"
+          >
+            <span>Guided Reading</span>
+          </a>
+          <a
             href="#how-it-works"
             className="text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] inline-flex items-center gap-1.5 focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] rounded px-1"
           >
@@ -45,7 +57,7 @@ export function Header({ onNewAnalysis, onFocusEditor, hasAnalysis }: HeaderProp
             className="text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] inline-flex items-center gap-1.5 focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] rounded px-1"
           >
             <BookOpen className="h-3.5 w-3.5 text-[var(--text-faint)]" />
-            <span>Readability Scale</span>
+            <span>Scale</span>
           </a>
 
           {/* Privacy badge */}
@@ -136,8 +148,25 @@ export function Header({ onNewAnalysis, onFocusEditor, hasAnalysis }: HeaderProp
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-[var(--border-subtle)] bg-[var(--canvas-card)] px-4 py-3 space-y-3 transition-all animate-in slide-in-from-top-2 duration-150">
+        <div
+          id="mobile-navigation-menu"
+          className="md:hidden border-t border-[var(--border-subtle)] bg-[var(--canvas-card)] px-4 py-3 space-y-3 transition-all animate-in slide-in-from-top-2 duration-150"
+        >
           <div className="flex flex-col gap-2.5 text-xs font-medium text-[var(--text-muted)]">
+            <a
+              href="#analysis-results"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 py-1.5 hover:text-[var(--text-main)]"
+            >
+              <span>Readability Audit</span>
+            </a>
+            <a
+              href="#guided-reading-workspace"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 py-1.5 hover:text-[var(--text-main)]"
+            >
+              <span>Guided Research Reading</span>
+            </a>
             <a
               href="#how-it-works"
               onClick={() => setMobileMenuOpen(false)}

@@ -18,11 +18,20 @@ import { ExtractedDocument } from '../lib/document/types';
 import { SelectedPassage } from '../lib/reading/types';
 import { extractPassageContext } from '../lib/reading/contextExtractor';
 import { getSampleResearchDocument } from '../lib/document/sampleDocument';
-import { RotateCcw, UploadCloud, Edit3, BookOpen, BarChart3 } from 'lucide-react';
+import { RotateCcw, UploadCloud, Edit3, BookOpen, BarChart3, Sparkles, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface WorkspaceProps {
   onAnalysisStateChange?: (hasAnalysis: boolean) => void;
   loadSampleSignal?: number;
+}
+
+interface RevisionUndoState {
+  previousText: string;
+  previousDocument: ExtractedDocument | null;
+  previousAnalysis: AnalysisResult | null;
+  previousSentenceId: string | null;
+  sentenceRank: number;
 }
 
 export function Workspace({ onAnalysisStateChange, loadSampleSignal }: WorkspaceProps) {
@@ -33,6 +42,8 @@ export function Workspace({ onAnalysisStateChange, loadSampleSignal }: Workspace
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedSentenceId, setSelectedSentenceId] = useState<string | null>(null);
   const [rewriteSentence, setRewriteSentence] = useState<DifficultSentence | null>(null);
+  const [undoState, setUndoState] = useState<RevisionUndoState | null>(null);
+  const [revisionToast, setRevisionToast] = useState<{ message: string; rank: number } | null>(null);
 
   // Guided Reading mode state
   const [viewMode, setViewMode] = useState<'reading' | 'audit'>('audit');
@@ -182,6 +193,85 @@ export function Workspace({ onAnalysisStateChange, loadSampleSignal }: Workspace
     setSelectedSentenceId(sentence.id);
   };
 
+  const handleApplyRevision = (sentence: DifficultSentence, newSentenceText: string) => {
+    const currentText = document ? document.fullText : text;
+    if (!currentText) return;
+
+    // Save previous state for full reversible undo
+    setUndoState({
+      previousText: currentText,
+      previousDocument: document,
+      previousAnalysis: analysis,
+      previousSentenceId: selectedSentenceId,
+      sentenceRank: sentence.rank,
+    });
+
+    let updatedText = currentText;
+    const startIndex = sentence.startIndex;
+    const endIndex = sentence.endIndex;
+
+    if (
+      startIndex >= 0 &&
+      endIndex <= currentText.length &&
+      currentText.slice(startIndex, endIndex) === sentence.text
+    ) {
+      updatedText = currentText.slice(0, startIndex) + newSentenceText + currentText.slice(endIndex);
+    } else {
+      const foundIdx = currentText.indexOf(sentence.text);
+      if (foundIdx !== -1) {
+        updatedText =
+          currentText.slice(0, foundIdx) + newSentenceText + currentText.slice(foundIdx + sentence.text.length);
+      } else {
+        console.warn('Could not locate exact sentence occurrence in manuscript.');
+        return;
+      }
+    }
+
+    setText(updatedText);
+
+    let updatedDoc: ExtractedDocument | null = null;
+    if (document) {
+      updatedDoc = {
+        ...document,
+        fullText: updatedText,
+      };
+      setDocument(updatedDoc);
+    }
+
+    // Recompute readability analysis immediately
+    try {
+      const rawResult = analyzeChapter(updatedText);
+      const newAnalysis = updatedDoc
+        ? enrichAnalysisWithDocument(rawResult, updatedDoc)
+        : rawResult;
+      setAnalysis(newAnalysis);
+
+      if (newAnalysis.difficultSentences.length > 0) {
+        setSelectedSentenceId(newAnalysis.difficultSentences[0].id);
+      }
+    } catch (err) {
+      console.error('Error re-analyzing after revision:', err);
+    }
+
+    setRevisionToast({
+      message: `Applied revision to difficult sentence #${sentence.rank}. Analysis recomputed.`,
+      rank: sentence.rank,
+    });
+
+    setRewriteSentence(null);
+  };
+
+  const handleUndoRevision = () => {
+    if (!undoState) return;
+
+    setText(undoState.previousText);
+    setDocument(undoState.previousDocument);
+    setAnalysis(undoState.previousAnalysis);
+    setSelectedSentenceId(undoState.previousSentenceId);
+    setUndoState(null);
+    setRevisionToast(null);
+  };
+
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-12">
       {/* Intake Section: Tab Selection & Active Workspace */}
@@ -270,83 +360,23 @@ export function Workspace({ onAnalysisStateChange, loadSampleSignal }: Workspace
         )}
       </div>
 
-      {/* Guided Reading Workspace View */}
-      {viewMode === 'reading' && effectiveDoc && (
-        <section
-          ref={readingSectionRef}
-          id="guided-reading-workspace"
-          aria-label="Guided Research Reading Workspace"
-          className="space-y-6 animate-in fade-in duration-300"
-        >
-          {/* Top Mode Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
-            <div className="flex items-center gap-2">
-              <div
-                role="tablist"
-                aria-label="Workspace view modes"
-                className="inline-flex rounded-xl border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] p-1 shadow-editorial-sm"
-              >
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={true}
-                  className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold bg-[var(--canvas-card)] text-[var(--brand-emerald)] shadow-xs border border-[var(--border-subtle)]"
-                >
-                  <BookOpen className="h-4 w-4 text-[var(--brand-emerald)]" />
-                  <span>Guided Research Reading</span>
-                </button>
-
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={false}
-                  onClick={() => {
-                    setViewMode('audit');
-                    if (!analysis && effectiveDoc) {
-                      if (document) {
-                        handleAnalyzeDocument();
-                      } else {
-                        handleAnalyzeText();
-                      }
-                    }
-                  }}
-                  className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
-                >
-                  <BarChart3 className="h-4 w-4" />
-                  <span>Readability & Cadence Audit</span>
-                </button>
-              </div>
-            </div>
-
-            <button
-              onClick={handleNewAnalysis}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-strong)] bg-[var(--canvas-card)] px-3 py-1.5 text-xs font-semibold text-[var(--text-main)] shadow-editorial-sm hover:bg-[var(--canvas-card-hover)] hover:border-[var(--brand-emerald)] focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] transition-colors"
-            >
-              <RotateCcw className="h-3.5 w-3.5 text-[var(--brand-emerald)]" />
-              <span>Reset / Edit Chapter</span>
-            </button>
-          </div>
-
-          <GuidedReadingWorkspace
-            document={effectiveDoc}
-            onSelectDifficultSentenceFromOutside={guidedReadingPassage}
-          />
-        </section>
-      )}
-
-      {/* Analysis Results Section (Readability & Friction Audit) */}
-      {viewMode === 'audit' && analysis && (
-        <section
-          ref={analysisSectionRef}
-          id="analysis-results"
-          aria-label="Chapter Readability Results"
-          className="space-y-10 animate-in fade-in duration-300"
-        >
-          {/* Action & Quick Navigation Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
-            <div className="flex items-center gap-3">
-              {/* Mode Switcher */}
-              {effectiveDoc && (
+      {/* Dynamic Viewport: Guided Reading vs Readability Audit */}
+      <AnimatePresence mode="wait">
+        {viewMode === 'reading' && effectiveDoc ? (
+          <motion.section
+            key="guided-reading-workspace"
+            ref={readingSectionRef}
+            id="guided-reading-workspace"
+            aria-label="Guided Research Reading Workspace"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className="space-y-6"
+          >
+            {/* Top Mode Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
+              <div className="flex items-center gap-2">
                 <div
                   role="tablist"
                   aria-label="Workspace view modes"
@@ -355,25 +385,34 @@ export function Workspace({ onAnalysisStateChange, loadSampleSignal }: Workspace
                   <button
                     type="button"
                     role="tab"
-                    aria-selected={false}
-                    onClick={() => setViewMode('reading')}
-                    className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
+                    aria-selected={true}
+                    className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold bg-[var(--canvas-card)] text-[var(--brand-emerald)] shadow-xs border border-[var(--border-subtle)]"
                   >
-                    <BookOpen className="h-4 w-4" />
+                    <BookOpen className="h-4 w-4 text-[var(--brand-emerald)]" />
                     <span>Guided Research Reading</span>
                   </button>
 
                   <button
                     type="button"
                     role="tab"
-                    aria-selected={true}
-                    className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold bg-[var(--canvas-card)] text-[var(--brand-emerald)] shadow-xs border border-[var(--border-subtle)]"
+                    aria-selected={false}
+                    onClick={() => {
+                      setViewMode('audit');
+                      if (!analysis && effectiveDoc) {
+                        if (document) {
+                          handleAnalyzeDocument();
+                        } else {
+                          handleAnalyzeText();
+                        }
+                      }
+                    }}
+                    className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
                   >
-                    <BarChart3 className="h-4 w-4 text-[var(--brand-emerald)]" />
+                    <BarChart3 className="h-4 w-4" />
                     <span>Readability & Cadence Audit</span>
                   </button>
                 </div>
-              )}
+              </div>
 
               <button
                 onClick={handleNewAnalysis}
@@ -384,53 +423,149 @@ export function Workspace({ onAnalysisStateChange, loadSampleSignal }: Workspace
               </button>
             </div>
 
-            {/* Quick in-page anchor links */}
-            <div className="flex items-center gap-2.5 text-xs text-[var(--text-faint)] font-editorial-mono">
-              <a
-                href="#manuscript-section"
-                className="hover:text-[var(--text-main)] transition-colors"
-              >
-                ↓ Manuscript Inspector
-              </a>
-              <span>•</span>
-              <a
-                href="#difficult-sentences-section"
-                className="hover:text-[var(--text-main)] transition-colors"
-              >
-                ↓ Difficult Sentences ({analysis.difficultSentences.length})
-              </a>
+            <GuidedReadingWorkspace
+              document={effectiveDoc}
+              onSelectDifficultSentenceFromOutside={guidedReadingPassage}
+            />
+          </motion.section>
+        ) : viewMode === 'audit' && analysis ? (
+          <motion.section
+            key="analysis-results"
+            ref={analysisSectionRef}
+            id="analysis-results"
+            aria-label="Chapter Readability Results"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className="space-y-10"
+          >
+            {/* Action & Quick Navigation Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
+              <div className="flex items-center gap-3">
+                {/* Mode Switcher */}
+                {effectiveDoc && (
+                  <div
+                    role="tablist"
+                    aria-label="Workspace view modes"
+                    className="inline-flex rounded-xl border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] p-1 shadow-editorial-sm"
+                  >
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={false}
+                      onClick={() => setViewMode('reading')}
+                      className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
+                    >
+                      <BookOpen className="h-4 w-4" />
+                      <span>Guided Research Reading</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={true}
+                      className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold bg-[var(--canvas-card)] text-[var(--brand-emerald)] shadow-xs border border-[var(--border-subtle)]"
+                    >
+                      <BarChart3 className="h-4 w-4 text-[var(--brand-emerald)]" />
+                      <span>Readability & Cadence Audit</span>
+                    </button>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleNewAnalysis}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-strong)] bg-[var(--canvas-card)] px-3 py-1.5 text-xs font-semibold text-[var(--text-main)] shadow-editorial-sm hover:bg-[var(--canvas-card-hover)] hover:border-[var(--brand-emerald)] focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] transition-colors"
+                >
+                  <RotateCcw className="h-3.5 w-3.5 text-[var(--brand-emerald)]" />
+                  <span>Reset / Edit Chapter</span>
+                </button>
+              </div>
+
+              {/* Quick in-page anchor links */}
+              <div className="flex items-center gap-2.5 text-xs text-[var(--text-faint)] font-editorial-mono">
+                <a
+                  href="#manuscript-section"
+                  className="hover:text-[var(--text-main)] transition-colors"
+                >
+                  ↓ Manuscript Inspector
+                </a>
+                <span>•</span>
+                <a
+                  href="#difficult-sentences-section"
+                  className="hover:text-[var(--text-main)] transition-colors"
+                >
+                  ↓ Difficult Sentences ({analysis.difficultSentences.length})
+                </a>
+              </div>
             </div>
-          </div>
 
-          {/* A. Readability Summary & Chapter Statistics */}
-          <div id="readability-summary-section">
-            <ScoreCard analysis={analysis} />
-          </div>
+            {/* Undo Revision Alert Banner */}
+            <AnimatePresence>
+              {revisionToast && undoState && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: 'auto' }}
+                  exit={{ opacity: 0, y: -8, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 p-3 sm:px-4 text-xs shadow-editorial-sm text-emerald-900 dark:text-emerald-200 overflow-hidden"
+                >
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-[var(--brand-emerald)] shrink-0" />
+                    <span>{revisionToast.message}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleUndoRevision}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-400 dark:border-emerald-700 bg-[var(--canvas-card)] px-3 py-1 font-bold text-emerald-900 dark:text-emerald-100 hover:bg-[var(--canvas-card-hover)] transition-colors shadow-xs"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5 text-[var(--brand-emerald)]" />
+                      <span>Undo Revision</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRevisionToast(null)}
+                      className="rounded p-1 text-emerald-700 dark:text-emerald-400 hover:text-emerald-950 hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
+                      aria-label="Dismiss notice"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-          {/* B. Full-Width Manuscript Inspector */}
-          <div id="manuscript-section" className="w-full">
-            <InlineHighlightedText
-              originalText={text}
-              difficultSentences={analysis.difficultSentences}
-              selectedSentenceId={selectedSentenceId}
-              onSelectSentence={handleSelectSentence}
-              sourceDoc={document}
-            />
-          </div>
+            {/* A. Readability Summary & Chapter Statistics */}
+            <div id="readability-summary-section">
+              <ScoreCard analysis={analysis} />
+            </div>
 
-          {/* C. Difficult Sentences Responsive Horizontal Card Grid */}
-          <div id="difficult-sentences-section" className="w-full">
-            <HardestSentencesList
-              sentences={analysis.difficultSentences}
-              totalSentencesInText={analysis.totalSentences}
-              selectedSentenceId={selectedSentenceId}
-              onSelectSentence={handleSelectSentence}
-              onOpenRewrite={(s) => setRewriteSentence(s)}
-              onOpenGuidedReading={handleOpenGuidedReading}
-            />
-          </div>
-        </section>
-      )}
+            {/* B. Full-Width Manuscript Inspector */}
+            <div id="manuscript-section" className="w-full">
+              <InlineHighlightedText
+                originalText={text}
+                difficultSentences={analysis.difficultSentences}
+                selectedSentenceId={selectedSentenceId}
+                onSelectSentence={handleSelectSentence}
+                sourceDoc={document}
+              />
+            </div>
+
+            {/* C. Difficult Sentences Responsive Horizontal Card Grid */}
+            <div id="difficult-sentences-section" className="w-full">
+              <HardestSentencesList
+                sentences={analysis.difficultSentences}
+                totalSentencesInText={analysis.totalSentences}
+                selectedSentenceId={selectedSentenceId}
+                onSelectSentence={handleSelectSentence}
+                onOpenRewrite={(s) => setRewriteSentence(s)}
+                onOpenGuidedReading={handleOpenGuidedReading}
+              />
+            </div>
+          </motion.section>
+        ) : null}
+      </AnimatePresence>
 
       {/* Educational & Craft Insights Section */}
       <div className="pt-6">
@@ -442,6 +577,7 @@ export function Workspace({ onAnalysisStateChange, loadSampleSignal }: Workspace
         <RewriteModal
           sentence={rewriteSentence}
           onClose={() => setRewriteSentence(null)}
+          onApplyRevision={handleApplyRevision}
         />
       )}
     </main>

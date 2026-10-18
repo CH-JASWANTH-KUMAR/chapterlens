@@ -56,11 +56,38 @@ describe('Rewrite API Route (/api/rewrite)', () => {
     expect(data.error).toContain('Invalid request');
   });
 
+  it('POST /api/rewrite strictly enforces explicit user consent before external transmission', async () => {
+    const req = new NextRequest('http://localhost:3000/api/rewrite', {
+      method: 'POST',
+      body: JSON.stringify({
+        sentence: 'A complex technical hypothesis requires verification.',
+        consentConfirmed: false,
+      }),
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(403);
+    const data = await res.json();
+    expect(data.error).toContain('Explicit user consent is required');
+  });
+
+  it('POST /api/rewrite rejects request when consentConfirmed is omitted', async () => {
+    const req = new NextRequest('http://localhost:3000/api/rewrite', {
+      method: 'POST',
+      body: JSON.stringify({
+        sentence: 'A complex technical hypothesis requires verification.',
+      }),
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(403);
+    const data = await res.json();
+    expect(data.error).toContain('Explicit user consent is required');
+  });
+
   it('POST /api/rewrite rejects sentence exceeding character limit', async () => {
     const longSentence = 'A'.repeat(1300);
     const req = new NextRequest('http://localhost:3000/api/rewrite', {
       method: 'POST',
-      body: JSON.stringify({ sentence: longSentence }),
+      body: JSON.stringify({ sentence: longSentence, consentConfirmed: true }),
     });
     const res = await POST(req);
     expect(res.status).toBe(400);
@@ -71,7 +98,10 @@ describe('Rewrite API Route (/api/rewrite)', () => {
   it('POST /api/rewrite returns 503 when no rewriting service is configured in deployment', async () => {
     const req = new NextRequest('http://localhost:3000/api/rewrite', {
       method: 'POST',
-      body: JSON.stringify({ sentence: 'The escapement clicked in the dark workshop.' }),
+      body: JSON.stringify({
+        sentence: 'The escapement clicked in the dark workshop.',
+        consentConfirmed: true,
+      }),
     });
     const res = await POST(req);
     expect(res.status).toBe(503);

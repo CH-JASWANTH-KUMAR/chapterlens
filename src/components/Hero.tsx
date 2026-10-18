@@ -1,8 +1,11 @@
 'use client';
 
-import React from 'react';
-import { Gauge, Target, BookOpen, ShieldCheck, ArrowDown, FlaskConical } from 'lucide-react';
+import React, { useState } from 'react';
+import { Gauge, BookOpen, ShieldCheck, ArrowDown, FlaskConical, Layers, Activity } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
+import { ResearchPaperSceneWrapper } from './visuals/ResearchPaperSceneWrapper';
+import { CadenceScannerVisual } from './visuals/CadenceScannerVisual';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface HeroProps {
   onScrollToEditor?: () => void;
@@ -10,6 +13,8 @@ interface HeroProps {
 }
 
 export function Hero({ onScrollToEditor, onTrySample }: HeroProps) {
+  const [visualMode, setVisualMode] = useState<'3d' | 'scanner'>('3d');
+
   return (
     <section className="relative overflow-hidden pt-8 pb-10 sm:pt-12 sm:pb-12 border-b border-[var(--border-subtle)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -96,66 +101,74 @@ export function Hero({ onScrollToEditor, onTrySample }: HeroProps) {
             </div>
           </div>
 
-          {/* Right Column: Restrained Editorial Cadence Spectrum Instrument */}
-          <div className="lg:col-span-5 flex justify-center lg:justify-end">
-            <div className="w-full max-w-md rounded-2xl border border-[var(--border-subtle)] bg-[var(--canvas-card)] p-5 sm:p-6 shadow-editorial transition-colors">
-              <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
-                <div className="flex items-center gap-2">
-                  <BrandLogo size={24} />
-                  <span className="font-editorial-serif text-sm font-bold text-[var(--text-main)]">
-                    Prose Cadence Diagnostics
-                  </span>
-                </div>
-                <span className="font-editorial-mono text-[10px] font-semibold text-[var(--brand-emerald)] uppercase">
-                  Client-Engine
-                </span>
-              </div>
+          {/* Right Column: Purposeful Interactive Visual Studio (Three.js 3D Paper Model & Anime.js Cadence Scanner) */}
+          <div className="lg:col-span-5 flex flex-col items-center lg:items-end space-y-3">
+            {/* Visual Mode Selector Tabs */}
+            <div
+              role="tablist"
+              aria-label="Hero visual demonstration modes"
+              className="inline-flex rounded-xl border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] p-1 shadow-editorial-sm"
+            >
+              <button
+                type="button"
+                role="tab"
+                id="tab-hero-3d"
+                aria-selected={visualMode === '3d'}
+                onClick={() => setVisualMode('3d')}
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] ${
+                  visualMode === '3d'
+                    ? 'bg-[var(--canvas-card)] text-[var(--brand-emerald)] shadow-xs border border-[var(--border-subtle)]'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+                }`}
+              >
+                <Layers className="h-3.5 w-3.5" />
+                <span>3D Manuscript</span>
+              </button>
 
-              {/* Minimal Cadence Spectrum Indicators */}
-              <div className="mt-4 space-y-3.5">
-                <div>
-                  <div className="flex items-center justify-between text-xs font-medium">
-                    <span className="text-[var(--text-muted)]">Sentence Cadence</span>
-                    <span className="font-editorial-mono text-[var(--text-main)]">14–20 words/sent</span>
-                  </div>
-                  <div className="mt-1.5 h-2 w-full rounded-full bg-[var(--canvas-card-subtle)] overflow-hidden">
-                    <div className="h-full w-[65%] rounded-full bg-[var(--brand-emerald)]" />
-                  </div>
-                </div>
+              <button
+                type="button"
+                role="tab"
+                id="tab-hero-scanner"
+                aria-selected={visualMode === 'scanner'}
+                onClick={() => setVisualMode('scanner')}
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] ${
+                  visualMode === 'scanner'
+                    ? 'bg-[var(--canvas-card)] text-[var(--brand-emerald)] shadow-xs border border-[var(--border-subtle)]'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+                }`}
+              >
+                <Activity className="h-3.5 w-3.5" />
+                <span>Cadence Scanner</span>
+              </button>
+            </div>
 
-                <div>
-                  <div className="flex items-center justify-between text-xs font-medium">
-                    <span className="text-[var(--text-muted)]">Phonetic Syllable Weight</span>
-                    <span className="font-editorial-mono text-[var(--text-main)]">1.3–1.5 syl/word</span>
-                  </div>
-                  <div className="mt-1.5 h-2 w-full rounded-full bg-[var(--canvas-card-subtle)] overflow-hidden">
-                    <div className="h-full w-[45%] rounded-full bg-[var(--brand-emerald)]" />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between text-xs font-medium">
-                    <span className="text-[var(--text-muted)]">Flesch Reading Ease Spectrum</span>
-                    <span className="font-editorial-mono text-[var(--brand-emerald)] font-bold">0 – 100 Ease</span>
-                  </div>
-                  <div className="mt-1.5 h-2 w-full rounded-full bg-gradient-to-r from-rose-500 via-amber-400 to-emerald-500 opacity-80" />
-                </div>
-              </div>
-
-              {/* Sample Diagnostic Callout Quote */}
-              <div className="mt-4.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] p-3 text-xs leading-relaxed">
-                <div className="flex items-center gap-1.5 font-semibold text-[var(--text-main)] font-editorial-mono text-[11px] mb-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand-emerald)]" />
-                  <span>Objective Diagnostic Mirror</span>
-                </div>
-                <p className="italic text-[var(--text-muted)] font-editorial-serif">
-                  &ldquo;A clockwork heart does not forgive impatience... It measures mortal hours with indifferent geometry.&rdquo;
-                </p>
-                <div className="mt-1.5 flex items-center justify-between text-[10px] text-[var(--text-faint)] font-editorial-mono">
-                  <span>Score: 78.4 · Fairly Easy</span>
-                  <span className="text-[var(--brand-emerald)]">Optimal cadence</span>
-                </div>
-              </div>
+            {/* Active Visual Container with Motion Transitions */}
+            <div className="w-full max-w-md min-h-[340px] flex items-center justify-center">
+              <AnimatePresence mode="wait">
+                {visualMode === '3d' ? (
+                  <motion.div
+                    key="hero-3d-visual"
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-full"
+                  >
+                    <ResearchPaperSceneWrapper />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="hero-scanner-visual"
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-full"
+                  >
+                    <CadenceScannerVisual />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>

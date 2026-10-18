@@ -22,6 +22,7 @@ import {
   X,
   ExternalLink,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface ExplanationPanelProps {
   selectedPassage: SelectedPassage | null;
@@ -160,14 +161,21 @@ export function ExplanationPanel({
                 onChangeLevel(opt.id);
               }}
               title={opt.desc}
-              className={`rounded-lg py-1.5 text-center text-xs font-semibold transition-all focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] ${
+              className={`relative rounded-lg py-1.5 text-center text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] ${
                 currentLevel === opt.id
-                  ? 'bg-[var(--brand-forest)] text-white shadow-xs'
+                  ? 'text-white'
                   : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--canvas-card-hover)]'
               }`}
             >
-              <span className="mr-1">{opt.icon}</span>
-              <span>{opt.label}</span>
+              {currentLevel === opt.id && (
+                <motion.div
+                  layoutId="activeLevelPill"
+                  className="absolute inset-0 rounded-lg bg-[var(--brand-forest)] shadow-xs"
+                  transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                />
+              )}
+              <span className="relative z-10 mr-1">{opt.icon}</span>
+              <span className="relative z-10">{opt.label}</span>
             </button>
           ))}
         </div>
@@ -313,26 +321,36 @@ export function ExplanationPanel({
                   {currentExplanation.comprehensionCheck.question}
                 </p>
 
-                {showAnswer ? (
-                  <div className="rounded-lg bg-[var(--canvas-card)] border border-[var(--border-subtle)] p-2.5 text-xs space-y-1 animate-in fade-in">
-                    <div className="flex items-center gap-1 text-[var(--brand-emerald)] font-bold text-[11px]">
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      <span>Answer: {currentExplanation.comprehensionCheck.answer}</span>
-                    </div>
-                    <p className="text-[11px] text-[var(--text-muted)] leading-normal">
-                      {currentExplanation.comprehensionCheck.explanation}
-                    </p>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setShowAnswer(true)}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--brand-emerald)] hover:underline"
-                  >
-                    <span>Reveal Answer & Explanation</span>
-                    <ChevronDown className="h-3 w-3" />
-                  </button>
-                )}
+                <AnimatePresence mode="wait">
+                  {showAnswer ? (
+                    <motion.div
+                      key="comprehension-answer"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                      className="rounded-lg bg-[var(--canvas-card)] border border-[var(--border-subtle)] p-2.5 text-xs space-y-1 overflow-hidden"
+                    >
+                      <div className="flex items-center gap-1 text-[var(--brand-emerald)] font-bold text-[11px]">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span>Answer: {currentExplanation.comprehensionCheck.answer}</span>
+                      </div>
+                      <p className="text-[11px] text-[var(--text-muted)] leading-normal">
+                        {currentExplanation.comprehensionCheck.explanation}
+                      </p>
+                    </motion.div>
+                  ) : (
+                    <motion.button
+                      key="reveal-button"
+                      type="button"
+                      onClick={() => setShowAnswer(true)}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--brand-emerald)] hover:underline"
+                    >
+                      <span>Reveal Answer & Explanation</span>
+                      <ChevronDown className="h-3 w-3" />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
               </div>
             )}
 
