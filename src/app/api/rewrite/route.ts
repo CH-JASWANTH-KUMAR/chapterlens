@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { evaluateExtractionQuality } from '@/lib/linguistics/contentQuality';
 
 interface RewriteRequestBody {
   sentence: string;
   consentConfirmed?: boolean;
+  reviewedMixedContent?: boolean;
   context?: string;
   style?: 'clear' | 'concise' | 'literary';
 }
@@ -126,6 +128,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Conservative extraction quality check before sending text to AI providers
+    const extractionQuality = evaluateExtractionQuality(trimmedSentence);
+    if (extractionQuality.isMixedContent && !body.reviewedMixedContent) {
+      return NextResponse.json(
+        {
+          error:
+            'Extraction quality check failed: Selected passage appears to contain mixed figure content, non-prose labels, or ambiguous source boundaries.',
+          code: 'MIXED_CONTENT_WARNING',
+          extractionQuality,
+        },
+        { status: 422 }
+      );
+    }
+
     if (!geminiKey && !openaiKey && !anthropicKey) {
       return NextResponse.json(
         {
@@ -140,18 +156,31 @@ export async function POST(req: NextRequest) {
     const systemPrompt = `You are a distinguished research copyeditor and linguistic specialist. Your goal is to optimize a difficult, high-friction sentence from a manuscript or scholarly document for clarity and cadence.
 
 Rigorous Editorial Principles:
-1. Preserve Meaning & Truth: Retain the author's exact thesis, nuance, tone, and technical precision. Do not oversimplify in a way that distorts meaning or changes scientific facts.
-2. Preserve Crucial Elements: Retain all uncertainty qualifications (e.g., "may", "suggests", "estimated"), numerical findings, equations, citations, specialized terminology, and named entities.
-3. Eliminate Cognitive Friction: Untangle nested clauses, clarify convoluted pronoun references, and break up excessive modifier stacking.
-4. Do Not Optimize Blindly for Flesch: Readability must not sacrifice conceptual accuracy.
+1. Preserve Meaning & Truth: Retain the author's exact thesis, nuance, tone, and technical precision. Do not oversimplify in a way that distorts meaning or changes scientific facts. Preserve every source-supported claim and its exact scope.
+2. Preserve Crucial Elements: Retain all uncertainty qualifications (e.g., "may", "suggests", "estimated"), numerical findings, equations, citations, specialized terminology, experimental conditions, and named entities.
+3. Strict Figure & Source Grounding:
+   - Never merge information from different figures, captions, or paragraphs into one claim unless the source explicitly connects them in prose.
+   - Never infer that an optimizer, method, or metric appears in a figure merely because its name occurs in nearby extracted text, axis labels, or legends.
+   - Refuse to invent missing context or extrapolate connections between juxtaposed chart fragments.
+4. Eliminate Cognitive Friction: Untangle nested clauses, clarify convoluted pronoun references, and break up excessive modifier stacking without sacrificing conceptual accuracy.
+5. Contaminated Source Handling: If the supplied text consists of mixed figure content, disparate captions, chart axis ticks, or disconnected fragments that cannot form a single coherent claim, DO NOT synthesize a combined rewrite. Instead, return a structured warning with warning code "CONTAMINATED_SOURCE".
 
 Output Format:
-Return a JSON object with:
-- "options": An array containing exactly 2 string revisions:
-  - Option A (Direct & Clear): Emphasizes direct syntactic structure and immediate readability.
-  - Option B (Rhythmic & Cadenced): Emphasizes natural cadence and balanced clauses for effortless reading.
-- "rationale": A concise sentence explaining what syntactic friction was relieved.
-- "preservedElements": A short string summarizing key terminology, qualifiers, or citations preserved.`;
+Return a JSON object:
+If the text is valid prose to rewrite:
+{
+  "options": [
+    "Option A (Direct & Clear revision)",
+    "Option B (Rhythmic & Cadenced revision)"
+  ],
+  "rationale": "Concise sentence explaining what syntactic friction was relieved.",
+  "preservedElements": "Short string summarizing key terminology, qualifiers, numbers, or citations preserved."
+}
+If the text is contaminated by mixed figure fragments or ungrounded captions:
+{
+  "warning": "CONTAMINATED_SOURCE",
+  "rationale": "Explanation of why the input contains contaminated or ungrounded figure fragments that cannot be rewritten safely."
+}`;
 
     const userPrompt = `${systemPrompt}\n\nOriginal Sentence to simplify:\n"${trimmedSentence}"\n\nReturn JSON only.`;
 
@@ -167,6 +196,29 @@ Return a JSON object with:
       } catch {
         return null;
       }
+    };
+
+    const formatProviderResult = (parsed: any, defaultRationale: string) => {
+      if (
+        parsed.warning === 'CONTAMINATED_SOURCE' ||
+        (parsed.warning && !parsed.options && !parsed.suggestion)
+      ) {
+        return NextResponse.json({
+          available: true,
+          warning: 'CONTAMINATED_SOURCE',
+          rationale:
+            parsed.rationale ||
+            'The selected text contains contaminated figure fragments or ungrounded captions and cannot be rewritten safely.',
+          suggestions: [],
+          preservedElements: null,
+        });
+      }
+      return NextResponse.json({
+        available: true,
+        suggestions: parsed.options || (parsed.suggestion ? [parsed.suggestion] : []),
+        rationale: parsed.rationale || defaultRationale,
+        preservedElements: parsed.preservedElements || null,
+      });
     };
 
     const parseUpstreamError = async (response: Response, provider: string): Promise<string> => {
@@ -229,12 +281,7 @@ Return a JSON object with:
       if (rawOutput) {
         const parsed = safeParseJson(rawOutput);
         if (parsed) {
-          return NextResponse.json({
-            available: true,
-            suggestions: parsed.options || (parsed.suggestion ? [parsed.suggestion] : []),
-            rationale: parsed.rationale || 'Simplified clause structure.',
-            preservedElements: parsed.preservedElements || null,
-          });
+          return formatProviderResult(parsed, 'Simplified clause structure.');
         }
       }
     }
@@ -278,12 +325,7 @@ Return a JSON object with:
       if (rawOutput) {
         const parsed = safeParseJson(rawOutput);
         if (parsed) {
-          return NextResponse.json({
-            available: true,
-            suggestions: parsed.options || (parsed.suggestion ? [parsed.suggestion] : []),
-            rationale: parsed.rationale || 'Reduced sentence complexity.',
-            preservedElements: parsed.preservedElements || null,
-          });
+          return formatProviderResult(parsed, 'Reduced sentence complexity.');
         }
       }
     }
@@ -330,12 +372,7 @@ Return a JSON object with:
       if (rawOutput) {
         const parsed = safeParseJson(rawOutput);
         if (parsed) {
-          return NextResponse.json({
-            available: true,
-            suggestions: parsed.options || (parsed.suggestion ? [parsed.suggestion] : []),
-            rationale: parsed.rationale || 'Reduced sentence complexity.',
-            preservedElements: parsed.preservedElements || null,
-          });
+          return formatProviderResult(parsed, 'Reduced sentence complexity.');
         }
       }
     }

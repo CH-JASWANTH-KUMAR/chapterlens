@@ -15,6 +15,7 @@ import {
   HelpCircle,
   ChevronDown,
   Layers,
+  AlertTriangle,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -391,7 +392,9 @@ export function DifficultSentencesCarousel({
                       {currentSentence.rank}
                     </span>
                     <span className="font-editorial-sans text-sm font-bold text-[var(--text-main)]">
-                      Rank #{currentSentence.rank} Most Difficult
+                      {currentSentence.extractionQuality?.isMixedContent
+                        ? `Candidate #${currentSentence.rank} (Mixed Figure Content)`
+                        : `Rank #${currentSentence.rank} Most Difficult`}
                     </span>
                     <span className="text-xs text-[var(--text-faint)] font-editorial-mono">
                       Friction Score:{' '}
@@ -402,11 +405,18 @@ export function DifficultSentencesCarousel({
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${issueInfo.badge}`}
-                    >
-                      {issueInfo.label}
-                    </span>
+                    {currentSentence.extractionQuality?.isMixedContent ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-100 dark:border-amber-800 dark:bg-amber-950/60 px-2.5 py-0.5 text-xs font-semibold text-amber-900 dark:text-amber-300">
+                        <AlertTriangle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                        <span>Extraction Warning</span>
+                      </span>
+                    ) : (
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${issueInfo.badge}`}
+                      >
+                        {issueInfo.label}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -428,6 +438,27 @@ export function DifficultSentencesCarousel({
                       </span>
                     )}
                     <span>¶ Paragraph {currentSentence.sourceLocation.paragraphIndex + 1}</span>
+                  </div>
+                )}
+
+                {/* Extraction Quality Warning Alert */}
+                {currentSentence.extractionQuality?.isMixedContent && (
+                  <div className="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 p-4 text-xs text-amber-900 dark:text-amber-200 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-sm text-amber-900 dark:text-amber-200">
+                      <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                      <span>Extraction Boundary Notice: Mixed Non-Prose Content</span>
+                    </div>
+                    <p className="leading-relaxed text-amber-800 dark:text-amber-300">
+                      {currentSentence.extractionQuality.warningMessage ||
+                        'This candidate contains non-prose figure elements or ambiguous source boundaries. AI rewriting is restricted unless explicitly reviewed to prevent combining distinct figures or chart data.'}
+                    </p>
+                    {currentSentence.extractionQuality.reasons.length > 0 && (
+                      <ul className="list-disc pl-4 text-[11px] text-amber-800/90 dark:text-amber-300/90 space-y-0.5">
+                        {currentSentence.extractionQuality.reasons.map((r, i) => (
+                          <li key={i}>{r}</li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 )}
 
@@ -547,8 +578,17 @@ export function DifficultSentencesCarousel({
                     onClick={() => onOpenRewrite(currentSentence)}
                     className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-forest)] px-5 py-2 text-xs sm:text-sm font-semibold text-white shadow-editorial hover:bg-[var(--brand-forest-hover)] active:scale-[0.98] transition-all focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)]"
                   >
-                    <Wand2 className="h-4 w-4 text-[var(--brand-forest-light)]" />
-                    <span>Simplify / Rewrite</span>
+                    {currentSentence.extractionQuality?.isMixedContent ? (
+                      <>
+                        <AlertTriangle className="h-4 w-4 text-amber-300" />
+                        <span>Review & Rewrite</span>
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="h-4 w-4 text-[var(--brand-forest-light)]" />
+                        <span>Simplify / Rewrite</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </motion.article>

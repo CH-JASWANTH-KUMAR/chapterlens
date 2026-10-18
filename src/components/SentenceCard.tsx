@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { DifficultSentence } from '../lib/linguistics/types';
-import { Copy, Check, Eye, Wand2, BookOpen } from 'lucide-react';
+import { Copy, Check, Eye, Wand2, BookOpen, AlertTriangle } from 'lucide-react';
 
 interface SentenceCardProps {
   sentence: DifficultSentence;
@@ -114,11 +114,18 @@ export function SentenceCard({
             </span>
           </div>
 
-          <span
-            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${issueInfo.badge}`}
-          >
-            {issueInfo.label}
-          </span>
+          {sentence.extractionQuality?.isMixedContent ? (
+            <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-100 dark:border-amber-800 dark:bg-amber-950/60 px-2 py-0.5 text-[10px] font-semibold text-amber-900 dark:text-amber-300">
+              <AlertTriangle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+              <span>Mixed Figure Content</span>
+            </span>
+          ) : (
+            <span
+              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${issueInfo.badge}`}
+            >
+              {issueInfo.label}
+            </span>
+          )}
         </div>
 
         {/* Source Location Indicator if available */}
@@ -151,6 +158,19 @@ export function SentenceCard({
             &ldquo;{sentence.text}&rdquo;
           </blockquote>
         </div>
+
+        {/* Extraction Quality Warning if mixed content */}
+        {sentence.extractionQuality?.isMixedContent && (
+          <div className="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/40 p-2.5 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+            <div className="flex items-center gap-1.5 font-bold">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>Ambiguous Source Extraction</span>
+            </div>
+            <p className="text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
+              Contains non-prose figure elements or ambiguous source boundaries. Review before rewriting.
+            </p>
+          </div>
+        )}
 
         {/* Honest Diagnostic Explanation */}
         <div className="rounded-xl bg-[var(--canvas-card-subtle)] border border-[var(--border-subtle)] p-3 text-xs text-[var(--text-muted)] space-y-1.5 leading-relaxed">
@@ -251,8 +271,17 @@ export function SentenceCard({
             className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--brand-forest)] py-1.5 px-3 text-xs font-semibold text-white shadow-xs hover:bg-[var(--brand-forest-hover)] active:scale-[0.98] transition-all focus-visible:ring-2 focus-visible:ring-[var(--brand-emerald)]"
             aria-label="Open rewrite assistance for this sentence"
           >
-            <Wand2 className="h-3.5 w-3.5 text-[var(--brand-forest-light)]" />
-            <span>Simplify / Rewrite</span>
+            {sentence.extractionQuality?.isMixedContent ? (
+              <>
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-300" />
+                <span>Review & Rewrite</span>
+              </>
+            ) : (
+              <>
+                <Wand2 className="h-3.5 w-3.5 text-[var(--brand-forest-light)]" />
+                <span>Simplify / Rewrite</span>
+              </>
+            )}
           </button>
         </div>
       </div>

@@ -9,6 +9,7 @@ import {
   Sparkles,
   Shield,
   AlertCircle,
+  AlertTriangle,
   RefreshCw,
   Feather,
   Wand2,
@@ -16,6 +17,7 @@ import {
   ArrowRight,
   ShieldCheck,
   BookmarkCheck,
+  Eye,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ExternalDisclosureModal } from './reading/ExternalDisclosureModal';
@@ -35,6 +37,14 @@ export function RewriteModal({ sentence, onClose, onApplyRevision }: RewriteModa
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [appliedIndex, setAppliedIndex] = useState<number | null>(null);
+
+  // Mixed-content extraction quality warning state
+  const isMixedContent = Boolean(sentence?.extractionQuality?.isMixedContent);
+  const [reviewedMixedContent, setReviewedMixedContent] = useState(false);
+  const [contaminatedRefusal, setContaminatedRefusal] = useState<{
+    warning: string;
+    rationale: string;
+  } | null>(null);
 
   // Consent state management
   const [hasConsented, setHasConsented] = useState<boolean>(() => {
@@ -61,17 +71,38 @@ export function RewriteModal({ sentence, onClose, onApplyRevision }: RewriteModa
   useEffect(() => {
     if (!sentence) return;
 
+    setReviewedMixedContent(false);
+    setContaminatedRefusal(null);
+    setSuggestions([]);
+    setRationale(null);
+    setPreservedElements(null);
+    setErrorMessage(null);
+
     // Check if rewriting API route is configured
     fetch('/api/rewrite')
       .then((res) => res.json())
       .then((data) => setApiStatus(data))
       .catch(() => setApiStatus({ available: false }));
-  }, [sentence]);
+  }, [sentence?.id]);
+
+  const handleLocateInDocument = () => {
+    if (!sentence) return;
+    const el = document.getElementById(`highlight-${sentence.id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('ring-4', 'ring-[var(--brand-emerald)]');
+      setTimeout(() => {
+        el.classList.remove('ring-4', 'ring-[var(--brand-emerald)]');
+      }, 1500);
+    }
+    onClose();
+  };
 
   const executeRewriteRequest = async () => {
     if (!sentence) return;
     setLoading(true);
     setErrorMessage(null);
+    setContaminatedRefusal(null);
     try {
       const res = await fetch('/api/rewrite', {
         method: 'POST',
@@ -79,11 +110,27 @@ export function RewriteModal({ sentence, onClose, onApplyRevision }: RewriteModa
         body: JSON.stringify({
           sentence: sentence.text,
           consentConfirmed: true,
+          reviewedMixedContent: isMixedContent ? reviewedMixedContent : true,
         }),
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        setErrorMessage(data.error || 'Failed to generate rewrites.');
+        if (res.status === 422 && data.code === 'MIXED_CONTENT_WARNING') {
+          setErrorMessage(
+            data.extractionQuality?.warningMessage ||
+              'Extraction quality check failed: This passage contains mixed figure content. Please review the text and check the acknowledgement box before requesting an AI rewrite.'
+          );
+        } else {
+          setErrorMessage(data.error || 'Failed to generate rewrites.');
+        }
+      } else if (data.warning === 'CONTAMINATED_SOURCE') {
+        setContaminatedRefusal({
+          warning: data.warning,
+          rationale:
+            data.rationale ||
+            'The AI service identified contaminated figure content and refused to generate an ungrounded rewrite.',
+        });
+        setSuggestions([]);
       } else {
         setSuggestions(data.suggestions || []);
         setRationale(data.rationale || null);
@@ -170,15 +217,81 @@ export function RewriteModal({ sentence, onClose, onApplyRevision }: RewriteModa
             <div className="flex items-center gap-2 text-[var(--brand-emerald)]">
               <Feather className="h-5 w-5" />
               <span className="text-xs font-bold uppercase tracking-wider font-editorial-mono">
-                Editorial Revision Studio
+                {isMixedContent ? 'Extraction Review & Revision Studio' : 'Editorial Revision Studio'}
               </span>
             </div>
             <h3
               id="rewrite-modal-title"
               className="mt-1 font-editorial-serif text-2xl font-bold tracking-tight text-[var(--text-main)]"
             >
-              Untangle Difficult Sentence #{sentence.rank}
+              {isMixedContent
+                ? `Review Extracted Selection #${sentence.rank}`
+                : `Untangle Difficult Sentence #${sentence.rank}`}
             </h3>
+
+            {/* Extraction Quality Warning Banner if mixed figure content */}
+            {isMixedContent && (
+              <div className="mt-4 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 p-4 sm:p-5 text-left">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <div className="space-y-2 flex-1">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h4 className="font-editorial-sans text-sm font-bold text-amber-900 dark:text-amber-200">
+                        Extraction Quality Warning: Mixed Figure / Non-Prose Content
+                      </h4>
+                      <span className="rounded-full bg-amber-200/80 dark:bg-amber-900/80 px-2 py-0.5 text-[10px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider font-editorial-mono">
+                        Ambiguous Boundaries
+                      </span>
+                    </div>
+                    <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                      {sentence.extractionQuality?.warningMessage ||
+                        'The selected text contains non-prose figure elements or ambiguous source boundaries (e.g. chart labels, axis ticks, or multiple figure captions). Rewriting mixed figure text can create inaccurate academic claims.'}
+                    </p>
+
+                    {sentence.extractionQuality?.reasons && sentence.extractionQuality.reasons.length > 0 && (
+                      <ul className="list-disc pl-4 text-[11px] text-amber-800/90 dark:text-amber-300/90 space-y-0.5">
+                        {sentence.extractionQuality.reasons.map((reason, idx) => (
+                          <li key={idx}>{reason}</li>
+                        ))}
+                      </ul>
+                    )}
+
+                    <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-amber-200 dark:border-amber-900/60">
+                      <button
+                        type="button"
+                        onClick={handleLocateInDocument}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-neutral-900 px-3 py-1 text-xs font-semibold text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-neutral-800 transition-colors"
+                      >
+                        <Eye className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                        <span>Inspect in Document</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={onClose}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-neutral-900 px-3 py-1 text-xs font-semibold text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-neutral-800 transition-colors"
+                      >
+                        <X className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                        <span>Select Smaller Passage</span>
+                      </button>
+                    </div>
+
+                    <div className="pt-2 border-t border-amber-200 dark:border-amber-900/60">
+                      <label className="flex items-start gap-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={reviewedMixedContent}
+                          onChange={(e) => setReviewedMixedContent(e.target.checked)}
+                          className="mt-0.5 h-4 w-4 rounded border-amber-400 text-[var(--brand-emerald)] focus:ring-[var(--brand-emerald)]"
+                        />
+                        <span className="text-xs font-medium text-amber-900 dark:text-amber-200">
+                          I have inspected the source passage and acknowledge that this selection contains mixed figure elements before requesting an AI rewrite.
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Original Sentence Display */}
             <div className="mt-5 rounded-xl border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] p-4 sm:p-5">
@@ -344,7 +457,17 @@ export function RewriteModal({ sentence, onClose, onApplyRevision }: RewriteModa
                     )}
                   </div>
 
-                  {suggestions.length === 0 && !loading && (
+                  {isMixedContent && !reviewedMixedContent ? (
+                    <div className="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-950/30 p-3 text-xs text-amber-900 dark:text-amber-200">
+                      <p className="font-semibold flex items-center gap-1.5">
+                        <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                        <span>Review Required Before AI Rewriting</span>
+                      </p>
+                      <p className="mt-1 text-[11px] text-amber-800 dark:text-amber-300">
+                        This selection contains non-prose figure elements. Please review the extraction warning above and check the confirmation box to proceed with an AI rewrite request.
+                      </p>
+                    </div>
+                  ) : suggestions.length === 0 && !loading && !contaminatedRefusal && (
                     <button
                       onClick={handleRequestRewrite}
                       className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-forest)] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-[var(--brand-forest-hover)] active:scale-[0.98] transition-all focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)]"
@@ -352,6 +475,21 @@ export function RewriteModal({ sentence, onClose, onApplyRevision }: RewriteModa
                       <Sparkles className="h-3.5 w-3.5 text-[var(--brand-forest-light)]" />
                       <span>Generate 2 Simplified Variations</span>
                     </button>
+                  )}
+
+                  {contaminatedRefusal && (
+                    <div className="rounded-xl border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 p-4 text-left space-y-2">
+                      <div className="flex items-center gap-2 text-rose-800 dark:text-rose-300 font-bold text-xs uppercase tracking-wider font-editorial-mono">
+                        <AlertCircle className="h-4 w-4" />
+                        <span>AI Grounding Protection: Refusal</span>
+                      </div>
+                      <p className="text-xs text-rose-900 dark:text-rose-200 font-medium leading-relaxed">
+                        {contaminatedRefusal.rationale}
+                      </p>
+                      <p className="text-[11px] text-rose-700 dark:text-rose-400">
+                        The AI copyeditor detected that this selection contains contaminated figure or chart fragments and refused to combine them into an ungrounded claim.
+                      </p>
+                    </div>
                   )}
 
                   {loading && (

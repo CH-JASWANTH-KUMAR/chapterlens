@@ -1,10 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { segmentText } from '../lib/linguistics/segmenter';
 import { analyzeChapter } from '../lib/linguistics/analyzer';
-import { scoreSentenceDifficulty, identifyHardestSentences } from '../lib/linguistics/difficulty';
+import {
+  scoreSentenceDifficulty,
+  identifyHardestSentences,
+  generateDeterministicEditingGuidance,
+} from '../lib/linguistics/difficulty';
 import { enrichAnalysisWithDocument } from '../lib/document/locator';
 import { ExtractedDocument, ExtractedBlock } from '../lib/document/types';
 import { extractPassageContext } from '../lib/reading/contextExtractor';
+import { evaluateExtractionQuality } from '../lib/linguistics/contentQuality';
 
 describe('Milestone 3.2: Validation with Representative Research Papers', () => {
   // 1. Adam: A Method for Stochastic Optimization (Kingma & Ba, 2014 - arXiv:1412.6980)
@@ -265,6 +270,104 @@ describe('Milestone 3.2: Validation with Representative Research Papers', () => 
       expect(restoredDoc.fullText).toBe(initialText);
       expect(restoredDoc.blocks[1].text).toBe(originalDoc.blocks[1].text);
       expect(restoredText).toBe(initialText);
+    });
+  });
+
+  // 8. Hotfix Regression: Figure Extraction Boundary & Mixed Content Protection
+  describe('Hotfix Regression: Figure Extraction Boundary & Mixed Content Protection', () => {
+    // 52-word selection from the Adam paper merging Figure 2 SFO comparison, axis labels, legend entries, and Figure 3 caption
+    const adamContaminatedSelection =
+      'Figure 2: Comparison of Adam to other optimization methods on logistic regression with SFO (Sohl-Dickstein et al., 2014). 0 20 40 60 80 100 10^-1 10^-2 10^-3 Adam AdaGrad RMSProp SGD SFO Figure 3: Convolutional neural networks on CIFAR-10 with standard architecture.';
+
+    it('segmentText separates Figure 2 SFO caption from Figure 3 caption', () => {
+      const sentences = segmentText(adamContaminatedSelection);
+      // Figure 2 and Figure 3 must not be merged into a single sentence
+      expect(sentences.length).toBeGreaterThanOrEqual(2);
+      expect(sentences[0].text).toContain('Figure 2:');
+      expect(sentences[0].text).not.toContain('Figure 3:');
+      expect(sentences[sentences.length - 1].text).toContain('Figure 3:');
+    });
+
+    it('evaluateExtractionQuality flags the contaminated selection as mixed content with specific signals', () => {
+      const quality = evaluateExtractionQuality(adamContaminatedSelection);
+      expect(quality.isMixedContent).toBe(true);
+      expect(quality.confidence).toBe('high');
+      expect(quality.signals.multipleCaptions).toBe(true);
+      expect(quality.signals.axisTicks).toBe(true);
+      expect(quality.signals.legendLabels).toBe(true);
+      expect(quality.reasons.length).toBeGreaterThanOrEqual(2);
+      expect(quality.warningMessage).toContain('non-prose figure content');
+    });
+
+    it('generateDeterministicEditingGuidance refuses to synthesize a fake rewrite for mixed figure content', () => {
+      const quality = evaluateExtractionQuality(adamContaminatedSelection);
+      const token = {
+        id: 'token-adam-contaminated',
+        text: adamContaminatedSelection,
+        startIndex: 0,
+        endIndex: adamContaminatedSelection.length,
+        paragraphIndex: 0,
+        sentenceIndexInParagraph: 0,
+        wordCount: 30,
+        syllableCount: 60,
+        polysyllabicWordCount: 8,
+        longWordCount: 10,
+        complexPunctuationCount: 4,
+        commaCount: 2,
+        isNonProse: true,
+        extractionQuality: quality,
+      };
+
+      const guidance = generateDeterministicEditingGuidance(token, 'combination', {
+        wordCount: 30,
+        syllableCount: 60,
+        avgSyllablesPerWord: 2.0,
+        polysyllabicWordCount: 8,
+        polysyllabicRatio: 0.27,
+        complexPunctuationCount: 4,
+        structuralComplexityScore: 0.8,
+        lengthScore: 0.7,
+        vocabularyScore: 0.7,
+      });
+
+      expect(guidance.suggestedRewrite).toBeUndefined();
+      expect(guidance.editorialTip).toContain('Extraction warning:');
+    });
+
+    it('preserves source text integrity without silently modifying or truncating content', () => {
+      const tokens = segmentText(adamContaminatedSelection);
+      // Rebuilding tokens covers the spans faithfully
+      expect(adamContaminatedSelection).toContain('SFO (Sohl-Dickstein et al., 2014)');
+      expect(adamContaminatedSelection).toContain('Convolutional neural networks on CIFAR-10');
+      // Character offsets must be preserved
+      for (const t of tokens) {
+        expect(adamContaminatedSelection.slice(t.startIndex, t.endIndex)).toBe(t.text);
+      }
+    });
+
+    it('allows ordinary scholarly prose with Fig. 1 and Fig. 2 cross-references to pass cleanly', () => {
+      const cleanProse =
+        'As illustrated in Fig. 1 and Fig. 2, the Transformer is the first transduction model relying entirely on self-attention.';
+      const quality = evaluateExtractionQuality(cleanProse);
+      expect(quality.isMixedContent).toBe(false);
+      expect(quality.signals.multipleCaptions).toBe(false);
+
+      const sentences = segmentText(cleanProse);
+      expect(sentences).toHaveLength(1);
+      expect(sentences[0].isNonProse).toBe(false);
+    });
+
+    it('keeps legitimate complex academic prose eligible for readability scoring', () => {
+      const complexProse =
+        'Some of Adam advantages are that the magnitudes of parameter updates are invariant to rescaling of the gradient, its stepsizes are approximately bounded by the stepsize hyperparameter, and it naturally performs a form of step size annealing.';
+      const sentences = segmentText(complexProse);
+      expect(sentences).toHaveLength(1);
+      expect(sentences[0].isNonProse).toBe(false);
+
+      const hardest = identifyHardestSentences(sentences, 1);
+      expect(hardest).toHaveLength(1);
+      expect(hardest[0].difficultyScore).toBeGreaterThan(30);
+      expect(hardest[0].extractionQuality?.isMixedContent).toBeFalsy();
     });
   });
 });

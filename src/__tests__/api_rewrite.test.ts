@@ -417,5 +417,130 @@ describe('Rewrite API Route (/api/rewrite)', () => {
       const serializedResponse = JSON.stringify(data);
       expect(serializedResponse).not.toContain('super-secret-gemini-key-777');
     });
+
+    it('blocks mixed-content figure selections with 422 MIXED_CONTENT_WARNING when unreviewed', async () => {
+      process.env.GEMINI_API_KEY = 'mock-gemini-key';
+      const fetchSpy = vi.fn();
+      global.fetch = fetchSpy;
+
+      const contaminatedPassage =
+        'Figure 2: Comparison of Adam with SFO. 0 20 40 60 80 100 10^-1 10^-2 Adam AdaGrad RMSProp SGD SFO Figure 3: Convolutional networks on CIFAR-10.';
+
+      const req = new NextRequest('http://localhost:3000/api/rewrite', {
+        method: 'POST',
+        body: JSON.stringify({
+          sentence: contaminatedPassage,
+          consentConfirmed: true,
+          // reviewedMixedContent is omitted / false
+        }),
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(422);
+      const data = await res.json();
+      expect(data.code).toBe('MIXED_CONTENT_WARNING');
+      expect(data.extractionQuality.isMixedContent).toBe(true);
+      expect(data.extractionQuality.signals.multipleCaptions).toBe(true);
+      // Upstream provider must never be invoked for unreviewed contaminated selection
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('allows mixed-content figure selection to proceed to provider when reviewedMixedContent is true', async () => {
+      process.env.GEMINI_API_KEY = 'mock-gemini-key';
+
+      const mockResponse = {
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    options: ['Carefully bounded single figure description.'],
+                    rationale: 'Isolated to verified claim.',
+                    preservedElements: ['CIFAR-10'],
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      };
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => mockResponse,
+      } as any);
+
+      const contaminatedPassage =
+        'Figure 2: Comparison of Adam with SFO. 0 20 40 60 80 100 10^-1 10^-2 Adam AdaGrad RMSProp SGD SFO Figure 3: Convolutional networks on CIFAR-10.';
+
+      const req = new NextRequest('http://localhost:3000/api/rewrite', {
+        method: 'POST',
+        body: JSON.stringify({
+          sentence: contaminatedPassage,
+          consentConfirmed: true,
+          reviewedMixedContent: true, // User reviewed and confirmed
+        }),
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.available).toBe(true);
+      expect(data.suggestions).toHaveLength(1);
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+
+      // Verify that the prompt sent to provider includes strict figure grounding rules
+      const [, callOpts] = (global.fetch as any).mock.calls[0];
+      const requestPayload = JSON.parse(callOpts.body);
+      const promptText = requestPayload.contents[0].parts[0].text;
+      expect(promptText).toContain('Never merge information from different figures');
+      expect(promptText).toContain('CONTAMINATED_SOURCE');
+    });
+
+    it('handles CONTAMINATED_SOURCE refusal warning returned by provider safely', async () => {
+      process.env.GEMINI_API_KEY = 'mock-gemini-key';
+
+      const mockResponse = {
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    warning: 'CONTAMINATED_SOURCE',
+                    rationale:
+                      'The text conflates Figure 2 SFO optimizer comparisons with Figure 3 CIFAR-10 ConvNet experiments and cannot be safely rewritten.',
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      };
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => mockResponse,
+      } as any);
+
+      const req = new NextRequest('http://localhost:3000/api/rewrite', {
+        method: 'POST',
+        body: JSON.stringify({
+          sentence: 'Figure 2: SFO vs Adam. 0 20 40 Figure 3: CIFAR-10.',
+          consentConfirmed: true,
+          reviewedMixedContent: true,
+        }),
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.warning).toBe('CONTAMINATED_SOURCE');
+      expect(data.suggestions).toHaveLength(0);
+      expect(data.rationale).toContain('conflates Figure 2 SFO optimizer comparisons');
+    });
   });
 });

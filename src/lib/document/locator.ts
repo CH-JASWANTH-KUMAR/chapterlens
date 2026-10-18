@@ -1,5 +1,6 @@
 import { ExtractedBlock, ExtractedDocument, SourceLocation } from './types';
 import { AnalysisResult, DifficultSentence, SentenceToken } from '../linguistics/types';
+import { evaluateExtractionQuality } from '../linguistics/contentQuality';
 
 /**
  * Finds the ExtractedBlock that encloses a specific character offset in fullText.
@@ -66,9 +67,20 @@ export function enrichAnalysisWithDocument(
     (sentence) => {
       const block = findBlockForOffset(blocks, sentence.startIndex);
       const sourceLocation = block ? getLocationFromBlock(block) : undefined;
+      const extractionQuality = evaluateExtractionQuality(
+        sentence.text,
+        blocks,
+        sentence.startIndex,
+        sentence.endIndex
+      );
+
       return {
         ...sentence,
         sourceLocation,
+        extractionQuality: extractionQuality.isMixedContent ? extractionQuality : sentence.extractionQuality,
+        explanation: extractionQuality.isMixedContent && extractionQuality.warningMessage
+          ? extractionQuality.warningMessage
+          : sentence.explanation,
       };
     }
   );
@@ -76,9 +88,18 @@ export function enrichAnalysisWithDocument(
   const enrichedSentences: SentenceToken[] = analysis.sentences.map((sentence) => {
     const block = findBlockForOffset(blocks, sentence.startIndex);
     const sourceLocation = block ? getLocationFromBlock(block) : undefined;
+    const extractionQuality = evaluateExtractionQuality(
+      sentence.text,
+      blocks,
+      sentence.startIndex,
+      sentence.endIndex
+    );
+
     return {
       ...sentence,
       sourceLocation,
+      extractionQuality: extractionQuality.isMixedContent ? extractionQuality : sentence.extractionQuality,
+      isNonProse: sentence.isNonProse || extractionQuality.isMixedContent,
     };
   });
 

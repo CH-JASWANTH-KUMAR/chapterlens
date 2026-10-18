@@ -1,5 +1,7 @@
 import { SourceLocation, DocumentExtractionWarning } from '../document/types';
+import { ExtractionQuality } from './contentQuality';
 export type { SourceLocation };
+export type { ExtractionQuality };
 
 export interface SentenceToken {
   id: string;
@@ -16,6 +18,7 @@ export interface SentenceToken {
   commaCount: number;
   sourceLocation?: SourceLocation;
   isNonProse?: boolean;
+  extractionQuality?: ExtractionQuality;
 }
 
 export interface ContributingSignals {
@@ -46,6 +49,7 @@ export interface DifficultSentence {
   aiProvider?: string;
   sourceLocation?: SourceLocation;
   isNonProse?: boolean;
+  extractionQuality?: ExtractionQuality;
 }
 
 export interface ReadabilityBand {

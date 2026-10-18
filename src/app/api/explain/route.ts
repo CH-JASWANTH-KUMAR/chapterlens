@@ -139,6 +139,7 @@ Rules for Grounding & Truthfulness:
 2. DO NOT fabricate citations, formulas, page numbers, experimental data, or author intentions.
 3. If an equation, diagram, or vital context is missing from the extracted text, explicitly state this limitation in "limitationsNotice".
 4. Do not merely paraphrase the sentence. Explain the actual concept, its purpose in this section, and how the terms connect.
+5. Strict Figure & Boundary Integrity: Never merge claims or experimental conditions from different figures or chart axis labels unless the paper explicitly connects them in prose.
 
 Tailor the explanation to the requested level: "${level}":
 - "beginner": Use clear, everyday analogies. Avoid jargon where possible. If technical terms are unavoidable, define them plainly.

@@ -84,7 +84,11 @@ export function scoreSentenceDifficulty(
   const highVocab = vocabularyComposite >= 0.55;
   const highStructure = structuralScore >= 0.5;
 
-  if (highLength && !highVocab && !highStructure) {
+  if (token.extractionQuality?.isMixedContent) {
+    explanation =
+      token.extractionQuality.warningMessage ||
+      `Extraction artifact: contains non-prose figure content (${token.extractionQuality.reasons.join(', ')}).`;
+  } else if (highLength && !highVocab && !highStructure) {
     primaryIssue = 'length';
     explanation = `${wordCount} words in a single sentence. Readers must hold multiple premises in working memory before reaching the resolution.`;
   } else if (highVocab && !highLength && !highStructure) {
@@ -206,6 +210,14 @@ export function generateDeterministicEditingGuidance(
   let working = original;
   let tip = '';
   let didTransform = false;
+
+  // 0. If marked as mixed figure content / extraction artifact, do not synthesize a fake rewrite
+  if (token.extractionQuality?.isMixedContent) {
+    return {
+      editorialTip: `Extraction warning: This selection contains mixed figure elements (${token.extractionQuality.reasons.join('; ')}). Inspect the document or select a specific individual sentence rather than rewriting mixed figure data.`,
+      suggestedRewrite: undefined,
+    };
+  }
 
   // 1. Structural Semicolon split: "Part A; Part B" -> "Part A. Part B"
   if (working.includes(';')) {
@@ -370,6 +382,7 @@ export function identifyHardestSentences(
       suggestedRewrite: guidance.suggestedRewrite,
       editorialTip: guidance.editorialTip,
       isNonProse: item.token.isNonProse,
+      extractionQuality: item.token.extractionQuality,
     };
   });
 }

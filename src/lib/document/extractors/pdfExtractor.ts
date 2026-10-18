@@ -106,11 +106,26 @@ function reconstructPageParagraphs(items: any[]): string[] {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+
+    // If this line starts a new figure caption or table header (e.g. "Figure 2:", "Figure 3:", "Table 1:")
+    // and we already have accumulated lines from a preceding block or figure, flush the previous lines
+    const isCaptionStart = /^(?:Figure|Fig\.?|Table|Chart)\s+\d+[:.]/i.test(line);
+    if (isCaptionStart && currentParagraphLines.length > 0) {
+      const paragraphText = currentParagraphLines.join(' ').replace(/\s+/g, ' ').trim();
+      if (paragraphText) {
+        paragraphs.push(paragraphText);
+      }
+      currentParagraphLines = [];
+    }
+
     currentParagraphLines.push(line);
 
     // If line ends with terminal punctuation and is noticeably shorter than average, or empty line
     const isShortTerminalLine = line.length < 55 && /[.?!:"']$/.test(line);
-    if (isShortTerminalLine || i === lines.length - 1) {
+    const nextLine = lines[i + 1];
+    const nextIsCaption = nextLine && /^(?:Figure|Fig\.?|Table|Chart)\s+\d+[:.]/i.test(nextLine);
+
+    if (isShortTerminalLine || nextIsCaption || i === lines.length - 1) {
       const paragraphText = currentParagraphLines.join(' ').replace(/\s+/g, ' ').trim();
       if (paragraphText) {
         paragraphs.push(paragraphText);

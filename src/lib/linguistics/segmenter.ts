@@ -1,5 +1,6 @@
 import { SentenceToken } from './types';
 import { countSyllablesInWord, isPolysyllabic } from './syllables';
+import { evaluateExtractionQuality } from './contentQuality';
 
 // Known abbreviations that end in a period and should not trigger a sentence break
 const COMMON_ABBREVIATIONS = new Set([
@@ -108,6 +109,32 @@ export function segmentText(originalText: string): SentenceToken[] {
       paragraphIndex++;
       sentenceIndexInParagraph = 0;
       continue;
+    }
+
+    // Check for mid-text figure/table caption declaration boundary (e.g. "Figure 2: ..." or "Figure 3: ...")
+    if (
+      currentSentenceStart !== -1 &&
+      currentIndex > currentSentenceStart &&
+      /\s/.test(originalText[currentIndex - 1])
+    ) {
+      const rest = originalText.slice(currentIndex);
+      const isCaptionHeader = /^(?:Figure|Fig\.?|Table|Chart)\s+\d+[a-zA-Z]?\s*[:.]\s+[A-Z]/i.test(rest);
+      if (isCaptionHeader) {
+        const sentenceRaw = originalText.slice(currentSentenceStart, currentIndex);
+        if (sentenceRaw.trim().length > 0) {
+          sentences.push(
+            createSentenceToken(
+              sentences.length.toString(),
+              sentenceRaw,
+              currentSentenceStart,
+              currentIndex,
+              paragraphIndex,
+              sentenceIndexInParagraph++
+            )
+          );
+        }
+        currentSentenceStart = currentIndex;
+      }
     }
 
     // Check for sentence terminator candidates: . ! ? …
@@ -298,6 +325,8 @@ function createSentenceToken(
   const parens = (rawText.match(/\([^)]*\)/g) || []).length;
   const commas = (rawText.match(/,/g) || []).length;
 
+  const extractionQuality = evaluateExtractionQuality(rawText);
+
   return {
     id,
     text: rawText,
@@ -311,7 +340,8 @@ function createSentenceToken(
     longWordCount,
     complexPunctuationCount: semicolons + emDashes + colons + parens,
     commaCount: commas,
-    isNonProse: isNonProseSentence(rawText),
+    isNonProse: isNonProseSentence(rawText) || extractionQuality.isMixedContent,
+    extractionQuality,
   };
 }
 
@@ -369,6 +399,16 @@ export function isNonProseSentence(text: string): boolean {
     /^\[[A-Za-z0-9,\s\-]+\]\s+[A-Z]/.test(trimmed) ||
     /^\d+\.\s+[A-Z][a-z]+,\s+[A-Z]\./.test(trimmed);
   if (isReferenceEntry) return true;
+
+  // 4. Standalone chart axis tick sequence or optimizer legend entry list
+  const isAxisTickLine = /^(?:(?:10\^[-+]?\d+|\b10\{[-+]?\d+\}|\d+(?:\.\d+)?)\s*[,;]?\s*){3,}$/.test(trimmed);
+  if (isAxisTickLine) return true;
+
+  const isLegendList =
+    /^(?:(?:Adam|AdaGrad|RMSProp|SGD|SFO|Nesterov|Momentum|Adadelta|Adamax)\b[\s,/()=\d^.-]*){2,}$/i.test(
+      trimmed
+    );
+  if (isLegendList && nonMathWords <= 4) return true;
 
   return false;
 }
