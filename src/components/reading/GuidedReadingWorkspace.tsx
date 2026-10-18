@@ -139,6 +139,12 @@ export function GuidedReadingWorkspace({
     setSelectedPassage(passage);
     setActiveBlockId(passage.blockId || null);
 
+    // If external AI provider is not configured on this deployment, do not prompt for consent or dispatch outbound request
+    if (!providerInfo.available) {
+      scrollExplanationIntoViewOnMobile();
+      return;
+    }
+
     if (!hasConsentedToAI) {
       setPendingPassageToExplain(passage);
       setIsDisclosureOpen(true);

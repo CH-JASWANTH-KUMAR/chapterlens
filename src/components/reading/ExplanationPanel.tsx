@@ -192,14 +192,33 @@ export function ExplanationPanel({
       <div className="max-h-[500px] overflow-y-auto custom-scrollbar p-5 space-y-5">
         {/* Unconfigured Provider Notice */}
         {!providerConfigured && (
-          <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/40 dark:border-amber-800 p-3.5 text-xs text-amber-900 dark:text-amber-200 space-y-1.5">
-            <div className="flex items-center gap-2 font-semibold">
+          <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/40 dark:border-amber-800 p-4 text-xs text-amber-900 dark:text-amber-200 space-y-3 text-left">
+            <div className="flex items-center gap-2 font-semibold text-amber-950 dark:text-amber-100">
               <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-              <span>AI Explanations Not Configured</span>
+              <span>AI Explanation Provider Not Configured</span>
             </div>
             <p className="text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
-              To enable multi-level explanations, set an API key in your environment (<code>GEMINI_API_KEY</code>, <code>OPENAI_API_KEY</code>, or <code>ANTHROPIC_API_KEY</code>). All document reading, structural navigation, and local readability analysis remain 100% available offline.
+              ChapterLens operates <strong>100% locally and privately by default</strong>. Full-text document reading, structural outline navigation, source location mapping, and local readability scoring remain fully operational in your browser without external services.
             </p>
+            <div className="rounded-lg bg-amber-100/70 dark:bg-amber-900/30 p-2.5 text-[11px] space-y-1.5 border border-amber-200/70 dark:border-amber-800/60">
+              <span className="font-semibold block text-amber-950 dark:text-amber-200">
+                To enable optional AI guided explanations:
+              </span>
+              <p className="text-[10px] text-amber-800 dark:text-amber-300">
+                Configure one server-side API key in your deployment environment:
+              </p>
+              <div className="space-y-1 font-editorial-mono text-[10px]">
+                <div className="bg-white/80 dark:bg-black/30 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200">
+                  GEMINI_API_KEY (Recommended)
+                </div>
+                <div className="bg-white/80 dark:bg-black/30 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200">
+                  OPENAI_API_KEY
+                </div>
+                <div className="bg-white/80 dark:bg-black/30 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200">
+                  ANTHROPIC_API_KEY
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

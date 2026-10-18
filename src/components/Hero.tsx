@@ -154,15 +154,20 @@ export function Hero({ onScrollToEditor, onTrySample }: HeroProps) {
                     transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                     className="w-full"
                   >
-                    <div className="relative w-full rounded-2xl border border-[var(--border-subtle)] bg-[var(--canvas-card)] p-3 sm:p-4 shadow-editorial overflow-hidden">
-                      <Image
-                        src="/brand-assets/chapterlens-hero-illustration.png"
-                        alt="ChapterLens editorial research manuscript analysis illustration"
-                        width={560}
-                        height={380}
-                        priority
-                        className="w-full h-auto rounded-xl object-contain"
-                      />
+                    <div className="relative w-full aspect-[4/3] rounded-2xl border border-[var(--border-subtle)] bg-[var(--canvas-card)] p-3 sm:p-4 shadow-editorial overflow-hidden flex items-center justify-center">
+                      <div className="relative w-full h-full rounded-xl overflow-hidden bg-[#F6F6EF]">
+                        <Image
+                          src="/brand-assets/chapterlens-hero-illustration.png"
+                          alt="ChapterLens editorial research manuscript analysis illustration"
+                          width={1536}
+                          height={1024}
+                          priority
+                          style={{
+                            transform: 'translate(-62.08%, -50.88%)',
+                          }}
+                          className="absolute top-1/2 left-1/2 w-[134%] max-w-none h-auto select-none pointer-events-none"
+                        />
+                      </div>
                     </div>
                   </motion.div>
                 ) : (
