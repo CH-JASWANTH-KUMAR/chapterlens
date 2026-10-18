@@ -68,6 +68,20 @@ export function ScoreCard({ analysis }: ScoreCardProps) {
           <p className="mt-1 text-xs sm:text-sm text-[var(--text-muted)]">
             Exact Rudolf Flesch formula balancing average sentence cadence against phonetic syllable weight.
           </p>
+
+          {analysis.sourceDocument && (
+            <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)] font-editorial-mono">
+              <span className="rounded-md border border-[var(--brand-accent-border)] bg-[var(--brand-accent-bg)] px-2 py-0.5 font-semibold text-[var(--brand-accent-text)]">
+                Document: {analysis.sourceDocument.fileName}
+              </span>
+              {analysis.sourceDocument.pageCount && (
+                <span>• {analysis.sourceDocument.pageCount} Pages</span>
+              )}
+              <span className="uppercase text-[10px] text-[var(--text-faint)]">
+                ({analysis.sourceDocument.format})
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Statistical Reliability Pill */}

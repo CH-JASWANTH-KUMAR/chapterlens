@@ -10,20 +10,21 @@ export default function Home() {
   const [hasAnalysis, setHasAnalysis] = useState(false);
 
   const handleFocusEditor = () => {
-    const textarea = document.getElementById('chapter-text-input');
-    if (textarea) {
-      textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      textarea.focus();
+    const editor = document.getElementById('editor-workspace');
+    if (editor) {
+      editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    const textarea = document.getElementById('chapter-text-input');
+    textarea?.focus();
   };
 
   const handleNewAnalysis = () => {
     const editor = document.getElementById('editor-workspace');
     if (editor) {
       editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      const textarea = document.getElementById('chapter-text-input');
-      textarea?.focus();
     }
+    const textarea = document.getElementById('chapter-text-input');
+    textarea?.focus();
   };
 
   return (

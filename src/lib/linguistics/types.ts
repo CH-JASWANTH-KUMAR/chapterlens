@@ -1,3 +1,6 @@
+import { SourceLocation } from '../document/types';
+export type { SourceLocation };
+
 export interface SentenceToken {
   id: string;
   text: string;
@@ -11,6 +14,7 @@ export interface SentenceToken {
   longWordCount: number; // words with >= 10 characters
   complexPunctuationCount: number; // semicolons, em dashes, parentheses, colons
   commaCount: number;
+  sourceLocation?: SourceLocation;
 }
 
 export interface ContributingSignals {
@@ -37,6 +41,7 @@ export interface DifficultSentence {
   signals: ContributingSignals;
   suggestedRewrite?: string;
   editorialTip?: string;
+  sourceLocation?: SourceLocation;
 }
 
 export interface ReadabilityBand {
@@ -66,6 +71,13 @@ export interface AnalysisResult {
   isStatisticallyReliable: boolean;
   reliabilityNotice?: string;
   analyzedAt: string;
+  sourceDocument?: {
+    id?: string;
+    fileName: string;
+    format: string;
+    pageCount?: number;
+    hasHeadings?: boolean;
+  };
 }
 
 export interface TextSegment {

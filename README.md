@@ -1,87 +1,83 @@
 # ChapterLens 📖
 
-> **Understand your writing. Keep your voice.**  
-> A production-grade editorial readability studio built for novelists, essayists, students, and independent authors.
+> **Understand your writing. Master difficult research. Keep your voice.**  
+> A production-grade editorial clarity studio and guided research-reading environment for scholars, essayists, students, and authors.
 
 ---
 
-## 🌟 Overview
+## 🌟 Overview & Core Application Modes
 
-ChapterLens is an editorial readability tool designed specifically for writers. Unlike generic AI analyzers or arbitrary gamified scoring dashboards, ChapterLens operates with a clear philosophy:
+ChapterLens operates with a strict philosophy: deterministic local computation, transparent source-grounded comprehension, and absolute privacy. It provides two distinct, seamlessly integrated modes:
 
-1. **Deterministic Linguistic Engine**: Real mathematical scoring based on Rudolf Flesch’s Reading Ease index (1948).
-2. **Multi-Signal Difficulty Ranking**: Isolates the 5 hardest sentences using a calibrated composite heuristic (word cadence, syllable weight, polysyllabic density, and structural punctuation breaks) rather than naively flagging long sentences.
-3. **Offset-Preserved Highlighting**: 100% character-faithful inline manuscript rendering with non-destructive slicing that avoids regex string collisions (even on repeated identical sentences).
-4. **Privacy by Design**: Primary chapter analysis runs 100% client-side in browser memory. No server uploads, no cookies, no tracking scripts, and no database retention.
-5. **No Sign-Up or Mandatory AI**: Fully functional without accounts, subscriptions, or external LLM APIs. Optional AI assistance is strictly opt-in and handled via secure server-side routes.
+### 1. 📊 Readability & Cadence Audit
+- **Deterministic Linguistic Scoring**: Rudolf Flesch Reading Ease index (1948) balancing sentence cadence against syllable weight.
+- **Multi-Signal Friction Ranking**: Isolates the top difficult sentences using a calibrated composite heuristic (sentence length, syllable density, polysyllabic ratio, and structural clause fragmentation) rather than naively penalizing long sentences.
+- **Character-Faithful Highlighting**: 100% non-destructive inline manuscript highlighting preserving exact character offsets and whitespace without string-replacement collisions.
+- **Source Location Integration**: Maps every difficult sentence directly back to its original page number and section heading in imported documents.
 
----
-
-## 🎨 Visual Identity & UX Direction
-
-ChapterLens rejects the generic purple-gradient AI SaaS look in favor of a warm, distinguished editorial writing atelier:
-- **Canvas**: Warm ivory and paper-white (`#FBFBF9`, `#FFFFFF`)
-- **Brand Identity**: Deep forest green (`#1A3C2D`, `#122B20`)
-- **Typography**: Editorial serif (`Lora` / `Georgia`) paired with clean interface typography (`Plus Jakarta Sans`)
-- **Friction Highlights**: Muted amber, terracotta, and soft sage with numbered markers (`[1]`–`[5]`) for full non-color accessibility (WCAG 2.2 AA compliant).
-- **Responsive Studio**: Side-by-side manuscript review on desktop and unified vertical reading flow on tablet/mobile.
-
----
-
-## 📐 Mathematical & Linguistic Methodology
-
-### 1. The Flesch Reading Ease Formula
-
-$$\text{Score} = 206.835 - 1.015 \left(\frac{\text{Total Words}}{\text{Total Sentences}}\right) - 84.6 \left(\frac{\text{Total Syllables}}{\text{Total Words}}\right)$$
-
-- **Clamped Range**: Displayed from 0 to 100 (raw unclamped score available in inspector tooltip).
-- **Score Bands**:
-  - `90–100`: Very Easy (5th grade level, fluid & effortless)
-  - `80–89`: Easy (6th grade level, conversational commercial prose)
-  - `70–79`: Fairly Easy (7th grade level, mainstream fiction)
-  - `60–69`: Standard (8th–9th grade level, balanced literary & journalistic prose)
-  - `50–59`: Fairly Difficult (10th–12th grade level, high cognitive load)
-  - `30–49`: Difficult (College undergraduate, baroque or academic clauses)
-  - `0–29`: Very Difficult (Graduate / specialized academic prose)
-
-### 2. Multi-Signal Sentence Difficulty Heuristic
-
-To identify the hardest sentences, ChapterLens calculates normalized features for each sentence candidate:
-
-| Signal | Weight | Linguistic Dimension |
-| :--- | :---: | :--- |
-| **Sentence Length** | 35% | Words per sentence (cognitive working memory limit) |
-| **Syllable Density** | 25% | Average syllables per word (phonological processing effort) |
-| **Polysyllabic Ratio** | 25% | Proportion of words with $\ge 3$ syllables |
-| **Structural Complexity** | 15% | Semicolons, em dashes, parentheticals, colons, and comma cadence |
-
-**Deterministic Tie-Breaking**:
-If two sentences receive identical composite scores, ties are resolved deterministically:
-1. Higher polysyllabic word count
-2. Higher raw word count
-3. Earlier appearance (`startIndex`) in the original text
-
-### 3. Sentence Segmentation & Syllable Estimation
-
-- **Segmentation**: Handles abbreviations (`Dr.`, `Mr.`, `e.g.`, `i.e.`), decimal numbers (`3.14`), ellipses (`...`), and quoted dialogue attribution (`"Wait!" she whispered.`) without false sentence breaks.
-- **Syllable Estimation**: Combines an extensive irregular dictionary with morphological rules (silent `e`, syllabic consonants like `-ism`/`-sm`, pronounced vs. silent `-ed`, consonant-le endings, and hiatus vowel pairs).
+### 2. 📖 Guided Research Reading
+- **Academic Reading Workspace**: Clean reading pane with preserved section hierarchy, comfortable line lengths, and page boundary markers.
+- **Collapsible Document Navigator**: Interactive outline displaying section headings (`H1`, `H2`, `H3`) and page numbers for multi-page documents.
+- **Passage-Level Explanations**: Select any sentence or technical term and switch dynamically between three comprehension levels:
+  - **`🌱 Beginner`**: Core ideas explained in clear, everyday language with intuitive analogies and definitions of unfamiliar terms.
+  - **`🪜 Step by Step`**: Logical decomposition breaking passages into premises, mechanisms, and conclusions.
+  - **`🔬 Technical`**: Rigorous formulation using formal terminology, underlying assumptions, and methodological context.
+- **Prerequisite Concepts**: Automatically isolates up to 3 foundational concepts required to grasp the selected passage, with an **Explore** action for deep diving.
+- **Source Grounding & Limitations**: Every explanation cites the supporting verbatim passage, page number, section heading, and immediate context fit. Explicitly flags when extracted text omits formulas, diagrams, or tables instead of guessing.
+- **Lightweight Comprehension Check**: Single, focused question testing core understanding with an on-demand **Reveal Answer & Explanation** reveal.
 
 ---
 
-## ⚠️ Known Linguistic Limitations
+## 🔒 Privacy & Security Guarantees
 
-- **Idiomatic Variance**: Like all statistical formulas, Flesch Reading Ease measures surface structural friction, not deep narrative comprehension, irony, or conceptual subtlety.
-- **Literary Context**: Hemingway sentences routinely score 85+, while Faulkner and Woolf score 30–45. A low score indicates high surface complexity, not poor writing quality.
-- **Statistical Reliability**: Formulated for continuous prose passages of 100+ words. Passages under 30 words or fewer than 3 sentences display a short-sample warning.
+ChapterLens is engineered with privacy as a foundational requirement:
+
+1. **100% In-Browser Document Parsing**: PDFs (`pdfjs-dist`), Word documents (`mammoth`), plain text files, and pasted manuscripts are parsed entirely locally in your browser. Document files and raw manuscripts are **never uploaded to any server**.
+2. **Explicit User Consent Gate**: Before any AI explanation request is made, a transparent disclosure modal displays exactly what data will be transmitted and why. Transmission only occurs upon explicit user confirmation (`chapterlens-ai-consent` in session storage).
+3. **Strict Minimum Context Transmission**: The application **never transmits the full document**. Outbound requests send only the selected passage and its immediate surrounding paragraph, strictly capped at **1,200 characters**.
+4. **Server-Side API Key Isolation**: All provider credentials (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) remain strictly server-side in Next.js API routes (`/api/explain`, `/api/rewrite`). No keys are exposed to client-side bundles.
+5. **Private Offline Fallback**: If no AI provider is configured in the environment, ChapterLens operates 100% offline. Document importation, outline navigation, reading, and readability analysis remain fully operational.
+
+---
+
+## 🔑 Environment Variables & AI Provider Setup
+
+ChapterLens requires **zero environment variables** for all document reading, extraction, outline navigation, and readability scoring.
+
+To enable optional multi-level guided explanations and simplified sentence suggestions, set **one** of the following environment variables in your deployment (`.env.local` or hosting provider):
+
+```env
+# Option 1: Google Gemini (recommended default)
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Option 2: OpenAI
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Option 3: Anthropic
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+```
+
+### Rate Limiting & Deployment Architecture Note
+- **Rate-Limiting Protection**: Outbound explanation requests are cached in client-side session memory to eliminate duplicate requests for identical passages and levels. Upstream provider quota limits are safely caught and relayed to clients as HTTP 429 responses.
+- **Multi-Instance Limitation**: The application does not include a distributed Redis-backed rate limiter across serverless instances in this milestone; quota protection relies on upstream provider token limits and client session caching.
+
+---
+
+## ⚠️ Known Limitations & Scope Boundaries
+
+- **Scanned Image-Only PDFs (OCR)**: ChapterLens extracts digitally embedded text layers. Scanned PDFs containing only bitmap images will trigger an `EMPTY_PAGES` warning indicating that OCR extraction is not included in this milestone.
+- **Formulas and Complex Diagrams**: Raw text extraction cannot reliably interpret visual diagrams, charts, or complex multi-line LaTeX equations. When passages reference missing equations or figures, ChapterLens explicitly states this in `limitationsNotice` rather than fabricating scientific claims.
+- **Independent Scientific Validation**: Guided reading explanations are intended for comprehension assistance, not peer-review validation of research conclusions.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Framework**: Next.js 15 (App Router, React 19)
+- **Framework**: Next.js 15.5 (App Router, React 19)
 - **Language**: TypeScript (Strict Mode)
-- **Styling**: Tailwind CSS v4, CSS Variables, Editorial Tokens
+- **Styling**: Tailwind CSS v4, CSS Variables, Editorial Design Tokens
 - **Icons**: Lucide React
+- **Document Extractors**: `pdfjs-dist` (in-browser PDF extraction), `mammoth` (DOCX extraction)
 - **Testing**: Vitest 3, JSDOM
 - **Deployment Target**: Vercel
 
@@ -95,8 +91,8 @@ If two sentences receive identical composite scores, ties are resolved determini
 
 ### 1. Installation
 ```bash
-git clone <repository-url>
-cd Chapter_Lens
+git clone https://github.com/CH-JASWANTH-KUMAR/chapterlens.git
+cd chapterlens
 npm install
 ```
 
@@ -106,63 +102,38 @@ npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 3. Run Unit & Edge-Case Test Suite
+### 3. Run Quality & Test Commands
 ```bash
-npm run test
-```
+# Run all 110 automated tests
+npm test
 
-### 4. Production Build & Start
-```bash
+# Run TypeScript static analysis and linting
+npm run lint
+
+# Run optimized production build
 npm run build
-npm run start
 ```
 
 ---
 
-## 🔑 Environment Variables (Optional)
+## 🧪 Automated Test Verification
 
-The application requires **zero environment variables** for all core analysis, sentence ranking, and highlighting features.
-
-If you wish to enable optional server-side AI-assisted sentence revision:
-```env
-# Optional: Google Gemini API key for /api/rewrite
-GEMINI_API_KEY=your_gemini_api_key_here
-
-# Optional: OpenAI API key (alternative provider)
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Optional: Anthropic API key (alternative provider)
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-```
-
-When no API key is provided, ChapterLens generates useful deterministic editing guidance and rule-based suggested rewrites 100% offline in your browser, clearly labeled as editorial tips rather than AI rewrites.
-
----
-
-## 🧪 Testing Verification
-
-ChapterLens includes 60 automated tests across 8 test suites:
-- `flesch.test.ts`: Formula accuracy, mathematical clamping, reading time estimation
-- `syllables.test.ts`: Phonetic rules, silent letters, diphthongs, syllabic consonants (`-sm`), compound hyphenated words
-- `segmenter.test.ts`: Abbreviations, initials, decimal numbers, dialogue quotes, paragraph index preservation, em-dash clauses
-- `difficulty.test.ts`: Multi-signal scoring, feature normalization, deterministic tie-breaking, rule-based rewrites and editorial tips
-- `highlighter.test.ts`: Non-destructive character reconstruction, repeated identical sentences
-- `analyzer.test.ts`: Whole-chapter orchestrator, statistical reliability bounds
-- `edge_cases.test.ts`: 18 linguistic edge cases (empty input, fragments, large chapters, Unicode)
-- `api_rewrite.test.ts`: Server-side privacy boundaries, multi-provider validation, character limits, error handling
-
----
-
-## 🚢 Deployment to Vercel
-
-1. Push your repository to GitHub or GitLab.
-2. Import the project into the [Vercel Dashboard](https://vercel.com).
-3. The default settings (`Framework: Next.js`, `Build Command: npm run build`, `Output Directory: .next`) will be detected automatically.
-4. (Optional) Add `GEMINI_API_KEY` under Project Settings > Environment Variables if you want optional AI rewriting.
-5. Click **Deploy**.
+ChapterLens includes **110 automated tests across 11 test suites**:
+- `reading_guided.test.ts` (29 tests): Context extraction (≤1200 chars), source location preservation, multi-level explanations, prerequisite concept bounding, Gemini/OpenAI/Anthropic provider adapters, sanitized error reporting, user consent gate, payload constraints, and boundary edge cases.
+- `document_extractors.test.ts` (13 tests): PDF, DOCX, TXT local extraction, multi-page page indexing, heading detection, and corrupted file handling.
+- `document_integration.test.ts` (8 tests): End-to-end document-to-analysis pipeline, locator offset mapping, and page-enriched candidate ranking.
+- `api_rewrite.test.ts` (7 tests): Multi-provider rewrite handling, character limits, privacy boundaries, and offline fallbacks.
+- `flesch.test.ts` (5 tests): Rudolf Flesch formula mathematical accuracy and score band clamping.
+- `syllables.test.ts` (8 tests): Phonetic rules, silent letters, diphthongs, and syllabic consonants.
+- `segmenter.test.ts` (10 tests): Abbreviations, decimals, dialogue quotes, and em-dash clauses.
+- `difficulty.test.ts` (6 tests): Composite heuristic scoring, normalized weights, and deterministic tie-breaking.
+- `highlighter.test.ts` (3 tests): Non-destructive character reconstruction and repeated identical sentence handling.
+- `analyzer.test.ts` (3 tests): Whole-chapter orchestration and statistical reliability bounds.
+- `edge_cases.test.ts` (18 tests): Extreme character counts, whitespace variations, and Unicode manuscripts.
 
 ---
 
 ## 📄 License & Attribution
 
-Designed and engineered for writers everywhere. Open, private, and deterministic.
+Designed and engineered for researchers, writers, and students everywhere. Open, private, and deterministic.
+

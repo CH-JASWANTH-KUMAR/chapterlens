@@ -6,14 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
     "clsx": "^2.1.1",
     "lucide-react": "^0.475.0",
+    "mammoth": "^1.13.0",
+    "motion": "^14.3.0",
     "next": "^15.5.27",
+    "pdfjs-dist": "^6.4.299",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "tailwind-merge": "^3.0.1"

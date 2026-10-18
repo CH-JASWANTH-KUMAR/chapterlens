@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { DifficultSentence } from '../lib/linguistics/types';
+import { ExtractedDocument } from '../lib/document/types';
 import { buildTextSegments } from '../lib/linguistics/highlighter';
-import { Eye, ExternalLink } from 'lucide-react';
+import { Eye, ExternalLink, BookOpen, Layers } from 'lucide-react';
 
 interface InlineHighlightedTextProps {
   originalText: string;
   difficultSentences: DifficultSentence[];
   selectedSentenceId: string | null;
   onSelectSentence: (sentence: DifficultSentence) => void;
+  sourceDoc?: ExtractedDocument | null;
 }
 
 export function InlineHighlightedText({
@@ -17,13 +19,14 @@ export function InlineHighlightedText({
   difficultSentences,
   selectedSentenceId,
   onSelectSentence,
+  sourceDoc,
 }: InlineHighlightedTextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // When selectedSentenceId changes externally, scroll to the highlight
   useEffect(() => {
     if (!selectedSentenceId) return;
-    const el = document.getElementById(`highlight-${selectedSentenceId}`);
+    const el = window.document.getElementById(`highlight-${selectedSentenceId}`);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
@@ -41,6 +44,23 @@ export function InlineHighlightedText({
 
   const selectedSentence = difficultSentences.find((s) => s.id === selectedSentenceId);
 
+  // Map starting character offsets to structural page breaks or section headings
+  const structuralMarkers = useMemo(() => {
+    if (!sourceDoc || !sourceDoc.blocks) return new Map<number, { pageNumber?: number; heading?: string; level?: number }>();
+    const map = new Map<number, { pageNumber?: number; heading?: string; level?: number }>();
+    let lastPage = 1;
+
+    for (const block of sourceDoc.blocks) {
+      if (block.pageNumber && block.pageNumber > 1 && block.pageNumber !== lastPage) {
+        map.set(block.startIndex, { pageNumber: block.pageNumber });
+        lastPage = block.pageNumber;
+      } else if (block.type === 'heading') {
+        map.set(block.startIndex, { heading: block.text, level: block.level });
+      }
+    }
+    return map;
+  }, [sourceDoc]);
+
   return (
     <section
       aria-labelledby="manuscript-preview-heading"
@@ -53,12 +73,25 @@ export function InlineHighlightedText({
             <Eye className="h-4 w-4" />
           </div>
           <div>
-            <h3
-              id="manuscript-preview-heading"
-              className="font-editorial-serif text-lg sm:text-xl font-bold tracking-tight text-[var(--text-main)]"
-            >
-              Manuscript Inspector
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3
+                id="manuscript-preview-heading"
+                className="font-editorial-serif text-lg sm:text-xl font-bold tracking-tight text-[var(--text-main)]"
+              >
+                Manuscript Inspector
+              </h3>
+              {sourceDoc && sourceDoc.fileName && (
+                <span className="hidden sm:inline-flex items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-muted)] font-editorial-mono">
+                  {sourceDoc.pageCount ? (
+                    <BookOpen className="h-3 w-3 text-[var(--brand-emerald)]" />
+                  ) : (
+                    <Layers className="h-3 w-3 text-[var(--brand-emerald)]" />
+                  )}
+                  <span className="truncate max-w-[160px]">{sourceDoc.fileName}</span>
+                  {sourceDoc.pageCount && <span>· {sourceDoc.pageCount}p</span>}
+                </span>
+              )}
+            </div>
             <p className="text-xs text-[var(--text-faint)]">
               Exact verbatim text with character-preserved friction pinpoints.
             </p>
@@ -127,8 +160,36 @@ export function InlineHighlightedText({
       >
         <div className="max-w-4xl mx-auto font-editorial-serif text-[17px] sm:text-[18px] leading-[1.9] text-[var(--text-main)] whitespace-pre-wrap selection:bg-[var(--selection-bg)] selection:text-[var(--selection-text)]">
           {segments.map((segment, index) => {
+            const marker = structuralMarkers.get(segment.startIndex);
+            const markerElement = marker ? (
+              marker.pageNumber ? (
+                <div
+                  key={`page-${marker.pageNumber}-${index}`}
+                  className="my-6 flex items-center gap-3 select-none text-[11px] font-editorial-mono text-[var(--text-faint)]"
+                >
+                  <div className="h-px flex-1 bg-[var(--border-subtle)]" />
+                  <span className="rounded-full border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] px-3 py-0.5">
+                    Page {marker.pageNumber}
+                  </span>
+                  <div className="h-px flex-1 bg-[var(--border-subtle)]" />
+                </div>
+              ) : marker.heading ? (
+                <div
+                  key={`heading-${index}`}
+                  className="mt-6 mb-2 text-xs font-editorial-mono text-[var(--brand-emerald)] font-bold uppercase tracking-wider select-none"
+                >
+                  § {marker.heading}
+                </div>
+              ) : null
+            ) : null;
+
             if (!segment.isDifficult || !segment.difficultSentence) {
-              return <span key={index}>{segment.text}</span>;
+              return (
+                <React.Fragment key={index}>
+                  {markerElement}
+                  <span>{segment.text}</span>
+                </React.Fragment>
+              );
             }
 
             const sentence = segment.difficultSentence;
@@ -136,41 +197,43 @@ export function InlineHighlightedText({
             const rank = sentence.rank;
 
             return (
-              <mark
-                key={index}
-                id={`highlight-${sentence.id}`}
-                tabIndex={0}
-                role="button"
-                aria-pressed={isSelected}
-                aria-label={`Sentence rank ${rank} difficult: ${sentence.text}`}
-                onClick={() => {
-                  onSelectSentence(sentence);
-                  const card = document.getElementById(`card-${sentence.id}`);
-                  card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
+              <React.Fragment key={index}>
+                {markerElement}
+                <mark
+                  id={`highlight-${sentence.id}`}
+                  tabIndex={0}
+                  role="button"
+                  aria-pressed={isSelected}
+                  aria-label={`Sentence rank ${rank} difficult: ${sentence.text}`}
+                  onClick={() => {
                     onSelectSentence(sentence);
                     const card = document.getElementById(`card-${sentence.id}`);
                     card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  }
-                }}
-                className={`sentence-highlight sentence-highlight-rank-${rank} ${
-                  isSelected ? 'sentence-highlight-selected' : ''
-                }`}
-              >
-                {/* Numbered marker tag for non-color accessibility */}
-                <span
-                  aria-hidden="true"
-                  className={`inline-flex items-center justify-center rounded px-1.5 py-0.5 text-[10px] font-bold font-editorial-mono mr-1.5 select-none align-middle shadow-xs ${
-                    rankBadgeClasses[rank] || 'bg-neutral-800 text-white'
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectSentence(sentence);
+                      const card = document.getElementById(`card-${sentence.id}`);
+                      card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                  }}
+                  className={`sentence-highlight sentence-highlight-rank-${rank} ${
+                    isSelected ? 'sentence-highlight-selected' : ''
                   }`}
                 >
-                  [{rank}]
-                </span>
-                <span>{segment.text}</span>
-              </mark>
+                  {/* Numbered marker tag for non-color accessibility */}
+                  <span
+                    aria-hidden="true"
+                    className={`inline-flex items-center justify-center rounded px-1.5 py-0.5 text-[10px] font-bold font-editorial-mono mr-1.5 select-none align-middle shadow-xs ${
+                      rankBadgeClasses[rank] || 'bg-neutral-800 text-white'
+                    }`}
+                  >
+                    [{rank}]
+                  </span>
+                  <span>{segment.text}</span>
+                </mark>
+              </React.Fragment>
             );
           })}
         </div>

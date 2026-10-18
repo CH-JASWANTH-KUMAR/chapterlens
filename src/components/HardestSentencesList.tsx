@@ -11,6 +11,7 @@ interface HardestSentencesListProps {
   selectedSentenceId: string | null;
   onSelectSentence: (sentence: DifficultSentence) => void;
   onOpenRewrite: (sentence: DifficultSentence) => void;
+  onOpenGuidedReading?: (sentence: DifficultSentence) => void;
 }
 
 export function HardestSentencesList({
@@ -19,6 +20,7 @@ export function HardestSentencesList({
   selectedSentenceId,
   onSelectSentence,
   onOpenRewrite,
+  onOpenGuidedReading,
 }: HardestSentencesListProps) {
   return (
     <section aria-labelledby="hardest-sentences-heading" className="space-y-5">
@@ -74,6 +76,7 @@ export function HardestSentencesList({
               isSelected={selectedSentenceId === sentence.id}
               onSelect={onSelectSentence}
               onOpenRewrite={onOpenRewrite}
+              onOpenGuidedReading={onOpenGuidedReading}
             />
           ))}
         </div>

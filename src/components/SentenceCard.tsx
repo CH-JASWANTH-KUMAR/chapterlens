@@ -2,13 +2,14 @@
 
 import React, { useState } from 'react';
 import { DifficultSentence } from '../lib/linguistics/types';
-import { Copy, Check, Eye, Wand2 } from 'lucide-react';
+import { Copy, Check, Eye, Wand2, BookOpen } from 'lucide-react';
 
 interface SentenceCardProps {
   sentence: DifficultSentence;
   isSelected: boolean;
   onSelect: (sentence: DifficultSentence) => void;
   onOpenRewrite: (sentence: DifficultSentence) => void;
+  onOpenGuidedReading?: (sentence: DifficultSentence) => void;
 }
 
 export function SentenceCard({
@@ -16,6 +17,7 @@ export function SentenceCard({
   isSelected,
   onSelect,
   onOpenRewrite,
+  onOpenGuidedReading,
 }: SentenceCardProps) {
   const [copied, setCopied] = useState(false);
 
@@ -119,6 +121,30 @@ export function SentenceCard({
           </span>
         </div>
 
+        {/* Source Location Indicator if available */}
+        {sentence.sourceLocation && (
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-[var(--text-faint)] font-editorial-mono">
+            {sentence.sourceLocation.pageNumber ? (
+              <span className="inline-flex items-center gap-1 rounded-md bg-[var(--canvas-card-subtle)] border border-[var(--border-subtle)] px-2 py-0.5 text-[var(--text-muted)] font-semibold">
+                <BookOpen className="h-3 w-3 text-[var(--brand-emerald)]" />
+                <span>Page {sentence.sourceLocation.pageNumber}</span>
+              </span>
+            ) : null}
+            {sentence.sourceLocation.sectionHeading ? (
+              <span
+                className="inline-flex items-center gap-1 rounded-md bg-[var(--canvas-card-subtle)] border border-[var(--border-subtle)] px-2 py-0.5 text-[var(--text-muted)] font-semibold truncate max-w-[220px]"
+                title={sentence.sourceLocation.sectionHeading}
+              >
+                <span className="text-[var(--brand-emerald)]">§</span>
+                <span className="truncate">{sentence.sourceLocation.sectionHeading}</span>
+              </span>
+            ) : null}
+            <span className="text-[10px] text-[var(--text-faint)]">
+              ¶ Para {sentence.sourceLocation.paragraphIndex + 1}
+            </span>
+          </div>
+        )}
+
         {/* Verbatim Sentence Blockquote */}
         <div>
           <blockquote className="font-editorial-serif text-[14.5px] italic leading-relaxed text-[var(--text-main)] border-l-2 border-[var(--brand-emerald)]/60 pl-3">
@@ -200,6 +226,21 @@ export function SentenceCard({
               )}
             </button>
           </div>
+
+          {onOpenGuidedReading && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenGuidedReading(sentence);
+              }}
+              className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-[var(--brand-emerald)]/40 bg-emerald-50 dark:bg-emerald-950/40 py-1.5 px-3 text-xs font-semibold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 active:scale-[0.98] transition-all focus-visible:ring-2 focus-visible:ring-[var(--brand-emerald)]"
+              aria-label="Explain this sentence in Guided Reader"
+            >
+              <BookOpen className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Explain in Guided Reader</span>
+            </button>
+          )}
 
           <button
             type="button"

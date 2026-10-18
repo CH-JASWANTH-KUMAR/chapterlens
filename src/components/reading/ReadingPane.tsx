@@ -1,0 +1,190 @@
+'use client';
+
+import React, { useRef, useEffect } from 'react';
+import { ExtractedDocument, ExtractedBlock } from '../../lib/document/types';
+import { SelectedPassage } from '../../lib/reading/types';
+import { extractPassageContext } from '../../lib/reading/contextExtractor';
+import { Sparkles, BookOpen, Bookmark } from 'lucide-react';
+
+interface ReadingPaneProps {
+  document: ExtractedDocument;
+  selectedPassage: SelectedPassage | null;
+  onSelectPassage: (passage: SelectedPassage) => void;
+  onRequestExplain: (passage: SelectedPassage) => void;
+}
+
+export function ReadingPane({
+  document,
+  selectedPassage,
+  onSelectPassage,
+  onRequestExplain,
+}: ReadingPaneProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // When selectedPassage changes, ensure the active element is smoothly centered in view
+  useEffect(() => {
+    if (!selectedPassage) return;
+    const el = window.document.getElementById(`reading-sentence-${selectedPassage.startIndex}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [selectedPassage]);
+
+  // Splits a paragraph block into interactive sentence spans while preserving character offsets
+  const renderParagraphSentences = (block: ExtractedBlock) => {
+    const text = block.text;
+    // Sentence segmentation regex matching terminal punctuation
+    const sentenceRegex = /[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g;
+    const sentenceMatches: Array<{ text: string; start: number; end: number }> = [];
+
+    let match: RegExpExecArray | null;
+    while ((match = sentenceRegex.exec(text)) !== null) {
+      const sentenceText = match[0];
+      const relStart = match.index;
+      const relEnd = relStart + sentenceText.length;
+      sentenceMatches.push({
+        text: sentenceText,
+        start: block.startIndex + relStart,
+        end: block.startIndex + relEnd,
+      });
+    }
+
+    if (sentenceMatches.length === 0) {
+      sentenceMatches.push({
+        text,
+        start: block.startIndex,
+        end: block.endIndex,
+      });
+    }
+
+    return sentenceMatches.map((item, idx) => {
+      const isSelected =
+        selectedPassage &&
+        selectedPassage.startIndex === item.start &&
+        selectedPassage.endIndex === item.end;
+
+      const handleClick = () => {
+        const passage = extractPassageContext(document, item.start, item.end, item.text);
+        onSelectPassage(passage);
+      };
+
+      return (
+        <span
+          key={`sent-${idx}`}
+          id={`reading-sentence-${item.start}`}
+          tabIndex={0}
+          role="button"
+          aria-pressed={Boolean(isSelected)}
+          onClick={handleClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleClick();
+            }
+          }}
+          className={`relative inline rounded-xs transition-colors duration-150 cursor-pointer ${
+            isSelected
+              ? 'bg-[var(--brand-accent-bg)] text-[var(--brand-forest)] font-medium ring-2 ring-[var(--brand-emerald)] shadow-xs'
+              : 'hover:bg-[var(--canvas-card-subtle)] hover:text-[var(--text-main)]'
+          }`}
+        >
+          {item.text}
+          {isSelected && (
+            <span className="inline-flex items-center ml-1 align-baseline">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const passage = extractPassageContext(document, item.start, item.end, item.text);
+                  onRequestExplain(passage);
+                }}
+                className="inline-flex items-center gap-1 rounded-md bg-[var(--brand-forest)] text-white px-2 py-0.5 text-[10px] font-sans font-semibold shadow-xs hover:bg-[var(--brand-forest-hover)] active:scale-95 transition-all mx-1"
+              >
+                <Sparkles className="h-3 w-3 text-[var(--brand-forest-light)]" />
+                <span>Explain this passage</span>
+              </button>
+            </span>
+          )}
+        </span>
+      );
+    });
+  };
+
+  let lastPage = 0;
+
+  return (
+    <article
+      ref={containerRef}
+      tabIndex={0}
+      aria-label="Academic Manuscript Reading Surface"
+      className="flex-1 rounded-2xl border border-[var(--border-subtle)] bg-[var(--canvas-card)] shadow-editorial overflow-hidden focus-visible:outline-none"
+    >
+      {/* Top Reading Surface Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-6 py-3.5 bg-[var(--canvas-card-subtle)]">
+        <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-muted)]">
+          <BookOpen className="h-4 w-4 text-[var(--brand-emerald)]" />
+          <span className="font-editorial-mono truncate max-w-sm">{document.fileName}</span>
+        </div>
+        <div className="flex items-center gap-2 text-[11px] font-editorial-mono text-[var(--text-faint)]">
+          <span>Click any sentence to explain</span>
+          <span>•</span>
+          <span>{document.blocks.length} blocks</span>
+        </div>
+      </div>
+
+      {/* Main Document Reading Flow */}
+      <div className="max-h-[720px] overflow-y-auto custom-scrollbar p-6 sm:p-10 lg:p-12">
+        <div className="max-w-3xl mx-auto space-y-6 font-editorial-serif text-[17px] sm:text-[18px] leading-[1.88] text-[var(--text-main)] selection:bg-[var(--selection-bg)] selection:text-[var(--selection-text)]">
+          {document.blocks.length === 0 ? (
+            <div className="py-16 text-center text-sm text-[var(--text-muted)] space-y-2">
+              <p className="font-semibold text-[var(--text-main)]">No text content detected</p>
+              <p className="text-xs text-[var(--text-faint)]">
+                This document contains no readable paragraphs or text layers.
+              </p>
+            </div>
+          ) : (
+            document.blocks.map((block) => {
+              const hasNewPage =
+                block.pageNumber && block.pageNumber > 1 && block.pageNumber !== lastPage;
+              if (block.pageNumber) {
+                lastPage = block.pageNumber;
+              }
+
+              return (
+                <div key={block.id} id={`reading-block-${block.id}`} className="space-y-4">
+                  {/* Visual Page Break Indicator */}
+                  {hasNewPage && (
+                    <div className="my-8 flex items-center gap-3 select-none text-[11px] font-editorial-mono text-[var(--text-faint)]">
+                      <div className="h-px flex-1 bg-[var(--border-subtle)]" />
+                      <span className="rounded-full border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] px-3 py-0.5 shadow-xs">
+                        Page {block.pageNumber}
+                      </span>
+                      <div className="h-px flex-1 bg-[var(--border-subtle)]" />
+                    </div>
+                  )}
+
+                  {/* Heading Block */}
+                  {block.type === 'heading' ? (
+                    <div className="pt-4 pb-2 border-b border-[var(--border-subtle)]">
+                      <div className="text-[10px] uppercase font-editorial-mono font-bold text-[var(--brand-emerald)] tracking-wider">
+                        § Section {block.level || 1}
+                      </div>
+                      <h2 className="mt-1 font-editorial-serif text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]">
+                        {block.text}
+                      </h2>
+                    </div>
+                  ) : (
+                    /* Paragraph Block */
+                    <p className="text-[var(--text-main)] relative">
+                      {renderParagraphSentences(block)}
+                    </p>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}

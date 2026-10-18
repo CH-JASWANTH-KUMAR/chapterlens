@@ -95,6 +95,36 @@ Output format: JSON object with keys "options" (array of 2 strings) and "rationa
       return codeBlockMatch ? codeBlockMatch[1] : trimmed;
     };
 
+    const safeParseJson = (text: string) => {
+      try {
+        return JSON.parse(cleanJsonResponse(text));
+      } catch {
+        return null;
+      }
+    };
+
+    const sanitizeErrorMessage = (msg: string): string => {
+      if (!msg) return 'An error occurred while communicating with the AI service.';
+      return msg
+        .replace(/key=[a-zA-Z0-9_\-]+/gi, 'key=[REDACTED]')
+        .replace(/Bearer\s+[a-zA-Z0-9_\-]+/gi, 'Bearer [REDACTED]')
+        .replace(/x-api-key['"]?\s*[:=]\s*['"]?[a-zA-Z0-9_\-]+/gi, 'x-api-key: [REDACTED]');
+    };
+
+    const parseUpstreamError = async (response: Response, provider: string): Promise<string> => {
+      let detail = '';
+      try {
+        const json = await response.json();
+        detail = json?.error?.message || json?.message || '';
+      } catch {
+        try {
+          detail = await response.text();
+        } catch {}
+      }
+      const sanitized = sanitizeErrorMessage(detail).slice(0, 250);
+      return `${provider} API error (${response.status}): ${sanitized || 'Upstream request failed.'}`;
+    };
+
     // 1. Google Gemini
     if (geminiKey) {
       const response = await fetch(
@@ -125,9 +155,9 @@ Output format: JSON object with keys "options" (array of 2 strings) and "rationa
             { status: 429 }
           );
         }
-        const errorText = await response.text();
+        const errorText = await parseUpstreamError(response, 'Gemini');
         return NextResponse.json(
-          { error: `Gemini API error (${response.status}): ${errorText}` },
+          { error: errorText },
           { status: 502 }
         );
       }
@@ -135,12 +165,14 @@ Output format: JSON object with keys "options" (array of 2 strings) and "rationa
       const data = await response.json();
       const rawOutput = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (rawOutput) {
-        const parsed = JSON.parse(cleanJsonResponse(rawOutput));
-        return NextResponse.json({
-          available: true,
-          suggestions: parsed.options || (parsed.suggestion ? [parsed.suggestion] : []),
-          rationale: parsed.rationale || 'Simplified clause structure.',
-        });
+        const parsed = safeParseJson(rawOutput);
+        if (parsed) {
+          return NextResponse.json({
+            available: true,
+            suggestions: parsed.options || (parsed.suggestion ? [parsed.suggestion] : []),
+            rationale: parsed.rationale || 'Simplified clause structure.',
+          });
+        }
       }
     }
 
@@ -171,9 +203,9 @@ Output format: JSON object with keys "options" (array of 2 strings) and "rationa
             { status: 429 }
           );
         }
-        const errText = await response.text();
+        const errText = await parseUpstreamError(response, 'OpenAI');
         return NextResponse.json(
-          { error: `OpenAI API error (${response.status}): ${errText}` },
+          { error: errText },
           { status: 502 }
         );
       }
@@ -181,12 +213,14 @@ Output format: JSON object with keys "options" (array of 2 strings) and "rationa
       const data = await response.json();
       const rawOutput = data.choices?.[0]?.message?.content;
       if (rawOutput) {
-        const parsed = JSON.parse(cleanJsonResponse(rawOutput));
-        return NextResponse.json({
-          available: true,
-          suggestions: parsed.options || (parsed.suggestion ? [parsed.suggestion] : []),
-          rationale: parsed.rationale || 'Reduced sentence complexity.',
-        });
+        const parsed = safeParseJson(rawOutput);
+        if (parsed) {
+          return NextResponse.json({
+            available: true,
+            suggestions: parsed.options || (parsed.suggestion ? [parsed.suggestion] : []),
+            rationale: parsed.rationale || 'Reduced sentence complexity.',
+          });
+        }
       }
     }
 
@@ -220,9 +254,9 @@ Output format: JSON object with keys "options" (array of 2 strings) and "rationa
             { status: 429 }
           );
         }
-        const errText = await response.text();
+        const errText = await parseUpstreamError(response, 'Anthropic');
         return NextResponse.json(
-          { error: `Anthropic API error (${response.status}): ${errText}` },
+          { error: errText },
           { status: 502 }
         );
       }
@@ -230,12 +264,14 @@ Output format: JSON object with keys "options" (array of 2 strings) and "rationa
       const data = await response.json();
       const rawOutput = data.content?.[0]?.text;
       if (rawOutput) {
-        const parsed = JSON.parse(cleanJsonResponse(rawOutput));
-        return NextResponse.json({
-          available: true,
-          suggestions: parsed.options || (parsed.suggestion ? [parsed.suggestion] : []),
-          rationale: parsed.rationale || 'Reduced sentence complexity.',
-        });
+        const parsed = safeParseJson(rawOutput);
+        if (parsed) {
+          return NextResponse.json({
+            available: true,
+            suggestions: parsed.options || (parsed.suggestion ? [parsed.suggestion] : []),
+            rationale: parsed.rationale || 'Reduced sentence complexity.',
+          });
+        }
       }
     }
 
@@ -250,8 +286,12 @@ Output format: JSON object with keys "options" (array of 2 strings) and "rationa
         { status: 504 }
       );
     }
+    const safeError = (error?.message || 'Internal server error while processing rewrite.')
+      .replace(/key=[a-zA-Z0-9_\-]+/gi, 'key=[REDACTED]')
+      .replace(/Bearer\s+[a-zA-Z0-9_\-]+/gi, 'Bearer [REDACTED]')
+      .replace(/x-api-key['"]?\s*[:=]\s*['"]?[a-zA-Z0-9_\-]+/gi, 'x-api-key: [REDACTED]');
     return NextResponse.json(
-      { error: error?.message || 'Internal server error while processing rewrite.' },
+      { error: safeError },
       { status: 500 }
     );
   }
