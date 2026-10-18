@@ -25,6 +25,8 @@ function getValidApiKey(key: string | undefined): string | null {
   return trimmed;
 }
 
+const DEFAULT_GEMINI_MODEL = 'gemini-3.8-flash';
+
 /**
  * GET /api/rewrite
  * Reports whether optional AI rewriting is configured in the deployment environment.
@@ -34,6 +36,7 @@ export async function GET() {
   const openaiKey = getValidApiKey(process.env.OPENAI_API_KEY);
   const anthropicKey = getValidApiKey(process.env.ANTHROPIC_API_KEY);
   const isConfigured = Boolean(geminiKey || openaiKey || anthropicKey);
+  const geminiModel = process.env.GEMINI_MODEL?.trim() || DEFAULT_GEMINI_MODEL;
 
   return NextResponse.json({
     available: isConfigured,
@@ -43,6 +46,13 @@ export async function GET() {
       ? 'OpenAI'
       : anthropicKey
       ? 'Anthropic'
+      : null,
+    model: geminiKey
+      ? geminiModel
+      : openaiKey
+      ? 'gpt-4o-mini'
+      : anthropicKey
+      ? 'claude-3-5-haiku-20241022'
       : null,
     message: isConfigured
       ? 'AI rewriting assistance is configured.'
@@ -164,8 +174,9 @@ Return a JSON object with:
 
     // 1. Google Gemini
     if (geminiKey) {
+      const geminiModel = process.env.GEMINI_MODEL?.trim() || DEFAULT_GEMINI_MODEL;
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModel)}:generateContent?key=${geminiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

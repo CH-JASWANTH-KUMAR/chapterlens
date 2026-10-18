@@ -78,6 +78,7 @@ To enable optional multi-level AI explanations and sentence rewrites powered by 
    {
      "available": true,
      "provider": "Google Gemini",
+     "model": "gemini-3.8-flash",
      "message": "AI guided reading assistant is configured."
    }
    ```
@@ -89,14 +90,17 @@ To enable optional multi-level AI explanations and sentence rewrites powered by 
    - **Key**: `GEMINI_API_KEY`
    - **Value**: Your Google Gemini API key
    - **Environments**: Production, Preview, Development (as desired)
-4. Redeploy the application or trigger a new deployment.
-5. Confirm that production AI is active by inspecting `https://<your-app>.vercel.app/api/explain`.
+4. (Optional) Customize the model if desired:
+   - **Key**: `GEMINI_MODEL`
+   - **Value**: `gemini-3.8-flash` (default if omitted)
+5. Redeploy the application or trigger a new deployment.
+6. Confirm that production AI is active by inspecting `https://<your-app>.vercel.app/api/explain`.
 
 > [!WARNING]
 > **Git & Secret Safety**: Never hardcode API keys in source files or commit `.env.local` to Git. Ensure `.env*.local` remains strictly ignored in `.gitignore`. The repository includes `.env.example` as a safe, non-sensitive reference template.
 
 ### 3. Alternative Supported Providers
-While Google Gemini (`gemini-1.5-flash`) is the recommended primary provider for low-latency JSON reasoning, ChapterLens also supports:
+While Google Gemini (`gemini-3.8-flash`, configurable via `GEMINI_MODEL`) is the recommended primary provider for low-latency JSON reasoning, ChapterLens also supports:
 - `OPENAI_API_KEY` (`gpt-4o-mini`)
 - `ANTHROPIC_API_KEY` (`claude-3-5-haiku-20241022`)
 

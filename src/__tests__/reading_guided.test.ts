@@ -188,13 +188,26 @@ describe('Guided Research Reading (Milestone 2)', () => {
       expect(data.provider).toBeNull();
     });
 
-    it('GET /api/explain reports Google Gemini when GEMINI_API_KEY is configured', async () => {
+    it('GET /api/explain reports Google Gemini with default model gemini-3.8-flash', async () => {
       process.env.GEMINI_API_KEY = 'test-gemini-key';
+      delete process.env.GEMINI_MODEL;
       const res = await GET();
       const data = await res.json();
 
       expect(data.available).toBe(true);
       expect(data.provider).toBe('Google Gemini');
+      expect(data.model).toBe('gemini-3.8-flash');
+    });
+
+    it('GET /api/explain respects GEMINI_MODEL override', async () => {
+      process.env.GEMINI_API_KEY = 'test-gemini-key';
+      process.env.GEMINI_MODEL = 'gemini-custom-flash';
+      const res = await GET();
+      const data = await res.json();
+
+      expect(data.available).toBe(true);
+      expect(data.provider).toBe('Google Gemini');
+      expect(data.model).toBe('gemini-custom-flash');
     });
 
     it('GET /api/explain reports OpenAI when OPENAI_API_KEY is configured', async () => {
@@ -355,6 +368,43 @@ describe('Guided Research Reading (Milestone 2)', () => {
       expect(explanation.comprehensionCheck).toBeDefined();
       expect(explanation.comprehensionCheck?.question).toContain('How does the Transformer process');
       expect(explanation.comprehensionCheck?.answer).toBeDefined();
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('models/gemini-3.8-flash:generateContent?key=mock-gemini-key'),
+        expect.anything()
+      );
+    });
+
+    it('uses GEMINI_MODEL override in POST /api/explain when provided', async () => {
+      process.env.GEMINI_MODEL = 'gemini-custom-flash';
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          candidates: [
+            {
+              content: {
+                parts: [{ text: JSON.stringify({ explanation: 'Custom model explanation' }) }],
+              },
+            },
+          ],
+        }),
+      } as any);
+
+      const req = new NextRequest('http://localhost:3000/api/explain', {
+        method: 'POST',
+        body: JSON.stringify({
+          selectedPassage: 'We propose the Transformer architecture.',
+          level: 'beginner',
+        }),
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('models/gemini-custom-flash:generateContent?key=mock-gemini-key'),
+        expect.anything()
+      );
     });
 
     it('caps prerequisite concepts to at most 3', async () => {
