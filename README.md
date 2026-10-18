@@ -56,20 +56,49 @@ ChapterLens is engineered with privacy as a foundational requirement:
 
 ## 🔑 Environment Variables & AI Provider Setup
 
-ChapterLens requires **zero environment variables** for all document reading, extraction, outline navigation, and readability scoring.
+ChapterLens requires **zero environment variables** for all document reading, text extraction, outline navigation, and deterministic readability scoring. All core processing executes privately inside your browser.
 
-To enable optional multi-level guided explanations and simplified sentence suggestions, set **one** of the following environment variables in your deployment (`.env.local` or hosting provider):
+To enable optional multi-level AI explanations and sentence rewrites powered by Google Gemini (recommended default):
 
-```env
-# Option 1: Google Gemini (recommended default)
-GEMINI_API_KEY=your_gemini_api_key_here
+### 1. Local Development Setup
+1. Copy the template or use the generated `.env.local` file in your project root:
+   ```bash
+   cp .env.example .env.local
+   ```
+2. Open `.env.local` and replace the placeholder with your genuine Google Gemini API key obtained from [Google AI Studio](https://aistudio.google.com/):
+   ```env
+   GEMINI_API_KEY=your_actual_gemini_api_key_here
+   ```
+3. Restart your Next.js development server so the environment variable is loaded:
+   ```bash
+   npm run dev
+   ```
+4. Verify provider availability by visiting [http://localhost:3000/api/explain](http://localhost:3000/api/explain). It should report:
+   ```json
+   {
+     "available": true,
+     "provider": "Google Gemini",
+     "message": "AI guided reading assistant is configured."
+   }
+   ```
 
-# Option 2: OpenAI
-OPENAI_API_KEY=your_openai_api_key_here
+### 2. Vercel Production Setup
+1. Open your project dashboard in [Vercel](https://vercel.com/).
+2. Navigate to **Settings > Environment Variables**.
+3. Add a new variable:
+   - **Key**: `GEMINI_API_KEY`
+   - **Value**: Your Google Gemini API key
+   - **Environments**: Production, Preview, Development (as desired)
+4. Redeploy the application or trigger a new deployment.
+5. Confirm that production AI is active by inspecting `https://<your-app>.vercel.app/api/explain`.
 
-# Option 3: Anthropic
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-```
+> [!WARNING]
+> **Git & Secret Safety**: Never hardcode API keys in source files or commit `.env.local` to Git. Ensure `.env*.local` remains strictly ignored in `.gitignore`. The repository includes `.env.example` as a safe, non-sensitive reference template.
+
+### 3. Alternative Supported Providers
+While Google Gemini (`gemini-1.5-flash`) is the recommended primary provider for low-latency JSON reasoning, ChapterLens also supports:
+- `OPENAI_API_KEY` (`gpt-4o-mini`)
+- `ANTHROPIC_API_KEY` (`claude-3-5-haiku-20241022`)
 
 ### Rate Limiting & Deployment Architecture Note
 - **Rate-Limiting Protection**: Outbound explanation requests are cached in client-side session memory to eliminate duplicate requests for identical passages and levels. Upstream provider quota limits are safely caught and relayed to clients as HTTP 429 responses.

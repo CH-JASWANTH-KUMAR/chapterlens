@@ -7,24 +7,41 @@ interface RewriteRequestBody {
   style?: 'clear' | 'concise' | 'literary';
 }
 
+function getValidApiKey(key: string | undefined): string | null {
+  if (!key) return null;
+  const trimmed = key.trim();
+  if (
+    !trimmed ||
+    trimmed === 'replace_with_your_gemini_api_key' ||
+    trimmed === 'replace_with_your_openai_api_key' ||
+    trimmed === 'replace_with_your_anthropic_api_key' ||
+    trimmed.startsWith('replace_with_') ||
+    trimmed === 'your_gemini_api_key_here' ||
+    trimmed === 'your_openai_api_key_here' ||
+    trimmed === 'your_anthropic_api_key_here'
+  ) {
+    return null;
+  }
+  return trimmed;
+}
+
 /**
  * GET /api/rewrite
  * Reports whether optional AI rewriting is configured in the deployment environment.
  */
 export async function GET() {
-  const isConfigured = Boolean(
-    process.env.GEMINI_API_KEY ||
-    process.env.OPENAI_API_KEY ||
-    process.env.ANTHROPIC_API_KEY
-  );
+  const geminiKey = getValidApiKey(process.env.GEMINI_API_KEY);
+  const openaiKey = getValidApiKey(process.env.OPENAI_API_KEY);
+  const anthropicKey = getValidApiKey(process.env.ANTHROPIC_API_KEY);
+  const isConfigured = Boolean(geminiKey || openaiKey || anthropicKey);
 
   return NextResponse.json({
     available: isConfigured,
-    provider: process.env.GEMINI_API_KEY
+    provider: geminiKey
       ? 'Google Gemini'
-      : process.env.OPENAI_API_KEY
+      : openaiKey
       ? 'OpenAI'
-      : process.env.ANTHROPIC_API_KEY
+      : anthropicKey
       ? 'Anthropic'
       : null,
     message: isConfigured
@@ -76,9 +93,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const geminiKey = process.env.GEMINI_API_KEY;
-    const openaiKey = process.env.OPENAI_API_KEY;
-    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    const geminiKey = getValidApiKey(process.env.GEMINI_API_KEY);
+    const openaiKey = getValidApiKey(process.env.OPENAI_API_KEY);
+    const anthropicKey = getValidApiKey(process.env.ANTHROPIC_API_KEY);
 
     if (!geminiKey && !openaiKey && !anthropicKey) {
       return NextResponse.json(

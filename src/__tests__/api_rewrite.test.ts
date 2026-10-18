@@ -21,6 +21,14 @@ describe('Rewrite API Route (/api/rewrite)', () => {
     expect(data.message).toContain('locally and privately in your browser');
   });
 
+  it('GET /api/rewrite treats placeholder keys as unconfigured', async () => {
+    process.env.GEMINI_API_KEY = 'replace_with_your_gemini_api_key';
+    const res = await GET();
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(data.available).toBe(false);
+  });
+
   it('GET /api/rewrite reports provider when GEMINI_API_KEY is configured', async () => {
     process.env.GEMINI_API_KEY = 'test-gemini-key';
     const res = await GET();
@@ -96,6 +104,22 @@ describe('Rewrite API Route (/api/rewrite)', () => {
   });
 
   it('POST /api/rewrite returns 503 when no rewriting service is configured in deployment', async () => {
+    const req = new NextRequest('http://localhost:3000/api/rewrite', {
+      method: 'POST',
+      body: JSON.stringify({
+        sentence: 'The escapement clicked in the dark workshop.',
+        consentConfirmed: true,
+      }),
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(503);
+    const data = await res.json();
+    expect(data.available).toBe(false);
+    expect(data.error).toContain('No external AI rewriting API key');
+  });
+
+  it('POST /api/rewrite returns 503 when GEMINI_API_KEY is only a placeholder', async () => {
+    process.env.GEMINI_API_KEY = 'replace_with_your_gemini_api_key';
     const req = new NextRequest('http://localhost:3000/api/rewrite', {
       method: 'POST',
       body: JSON.stringify({
