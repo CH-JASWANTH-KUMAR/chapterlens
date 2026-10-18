@@ -17,13 +17,15 @@ import { AnalysisResult, DifficultSentence } from '../lib/linguistics/types';
 import { ExtractedDocument } from '../lib/document/types';
 import { SelectedPassage } from '../lib/reading/types';
 import { extractPassageContext } from '../lib/reading/contextExtractor';
+import { getSampleResearchDocument } from '../lib/document/sampleDocument';
 import { RotateCcw, UploadCloud, Edit3, BookOpen, BarChart3 } from 'lucide-react';
 
 interface WorkspaceProps {
   onAnalysisStateChange?: (hasAnalysis: boolean) => void;
+  loadSampleSignal?: number;
 }
 
-export function Workspace({ onAnalysisStateChange }: WorkspaceProps) {
+export function Workspace({ onAnalysisStateChange, loadSampleSignal }: WorkspaceProps) {
   const [activeTab, setActiveTab] = useState<'import' | 'paste'>('import');
   const [document, setDocument] = useState<ExtractedDocument | null>(null);
   const [text, setText] = useState<string>('');
@@ -39,6 +41,26 @@ export function Workspace({ onAnalysisStateChange }: WorkspaceProps) {
   const editorSectionRef = useRef<HTMLDivElement>(null);
   const analysisSectionRef = useRef<HTMLDivElement>(null);
   const readingSectionRef = useRef<HTMLDivElement>(null);
+
+  const handleLoadSampleDocument = () => {
+    const sampleDoc = getSampleResearchDocument();
+    setDocument(sampleDoc);
+    setText(sampleDoc.fullText);
+    setAnalysis(null);
+    setSelectedSentenceId(null);
+    setGuidedReadingPassage(null);
+    setActiveTab('import');
+    setViewMode('audit');
+    setTimeout(() => {
+      editorSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
+
+  React.useEffect(() => {
+    if (loadSampleSignal && loadSampleSignal > 0) {
+      handleLoadSampleDocument();
+    }
+  }, [loadSampleSignal]);
 
   // Handles analysis of raw pasted text
   const handleAnalyzeText = () => {
@@ -227,6 +249,7 @@ export function Workspace({ onAnalysisStateChange }: WorkspaceProps) {
               <DocumentImportZone
                 onDocumentExtracted={handleDocumentExtracted}
                 onSwitchToPaste={() => setActiveTab('paste')}
+                onLoadSample={handleLoadSampleDocument}
               />
             </div>
           )

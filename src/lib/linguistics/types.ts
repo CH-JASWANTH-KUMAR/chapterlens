@@ -77,6 +77,7 @@ export interface AnalysisResult {
     format: string;
     pageCount?: number;
     hasHeadings?: boolean;
+    isSample?: boolean;
   };
 }
 

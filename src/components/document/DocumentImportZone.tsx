@@ -11,6 +11,7 @@ import {
   AlertCircle,
   ShieldCheck,
   Info,
+  FlaskConical,
 } from 'lucide-react';
 import {
   extractDocument,
@@ -27,11 +28,13 @@ import { ExtractionAlert } from './ExtractionAlert';
 interface DocumentImportZoneProps {
   onDocumentExtracted: (doc: ExtractedDocument) => void;
   onSwitchToPaste: () => void;
+  onLoadSample?: () => void;
 }
 
 export function DocumentImportZone({
   onDocumentExtracted,
   onSwitchToPaste,
+  onLoadSample,
 }: DocumentImportZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -224,7 +227,7 @@ export function DocumentImportZone({
               </p>
             </div>
 
-            {/* File Picker Button & Paste Alternative */}
+            {/* File Picker Button & Action Hierarchy */}
             <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
               <button
                 type="button"
@@ -236,8 +239,21 @@ export function DocumentImportZone({
                 <span>Browse Files on Device</span>
               </button>
 
+              {onLoadSample && (
+                <button
+                  type="button"
+                  id="load-sample-document-button"
+                  onClick={onLoadSample}
+                  className="inline-flex items-center gap-2 rounded-xl border border-[var(--brand-accent-border)] bg-[var(--brand-accent-bg)] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--brand-accent-text)] hover:bg-[var(--brand-accent-bg)]/80 hover:border-[var(--brand-emerald)] shadow-xs transition-all active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)]"
+                >
+                  <FlaskConical className="h-4 w-4 text-[var(--brand-emerald)]" />
+                  <span>Try Sample Research Paper</span>
+                </button>
+              )}
+
               <button
                 type="button"
+                id="switch-to-paste-button"
                 onClick={onSwitchToPaste}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-strong)] bg-[var(--canvas-card)] px-4 py-2.5 text-xs sm:text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--brand-emerald)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)]"
               >

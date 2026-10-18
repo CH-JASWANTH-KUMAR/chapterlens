@@ -92,6 +92,7 @@ export function enrichAnalysisWithDocument(
       format: document.format,
       pageCount: document.pageCount,
       hasHeadings: document.hasHeadings,
+      isSample: Boolean(document.isSample),
     },
   };
 }

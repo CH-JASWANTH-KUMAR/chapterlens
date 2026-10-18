@@ -45,6 +45,7 @@ export interface ExtractedDocument {
   pageCount?: number;
   hasHeadings: boolean;
   warnings: DocumentExtractionWarning[];
+  isSample?: boolean;
 }
 
 export type ExtractionStage = 'reading' | 'parsing' | 'extracting' | 'structuring' | 'complete';

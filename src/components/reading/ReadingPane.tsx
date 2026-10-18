@@ -124,6 +124,11 @@ export function ReadingPane({
         <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-muted)]">
           <BookOpen className="h-4 w-4 text-[var(--brand-emerald)]" />
           <span className="font-editorial-mono truncate max-w-sm">{document.fileName}</span>
+          {document.isSample && (
+            <span className="rounded-md border border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider">
+              🧪 Sample
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2 text-[11px] font-editorial-mono text-[var(--text-faint)]">
           <span>Click any sentence to explain</span>

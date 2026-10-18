@@ -8,6 +8,7 @@ import { Footer } from '../components/Footer';
 
 export default function Home() {
   const [hasAnalysis, setHasAnalysis] = useState(false);
+  const [loadSampleSignal, setLoadSampleSignal] = useState(0);
 
   const handleFocusEditor = () => {
     const editor = document.getElementById('editor-workspace');
@@ -16,6 +17,10 @@ export default function Home() {
     }
     const textarea = document.getElementById('chapter-text-input');
     textarea?.focus();
+  };
+
+  const handleTrySample = () => {
+    setLoadSampleSignal((prev) => prev + 1);
   };
 
   const handleNewAnalysis = () => {
@@ -36,11 +41,17 @@ export default function Home() {
       />
       
       {/* Editorial Hero Banner */}
-      <Hero onScrollToEditor={handleFocusEditor} />
+      <Hero
+        onScrollToEditor={handleFocusEditor}
+        onTrySample={handleTrySample}
+      />
 
       {/* Main Analysis Workspace */}
       <div className="flex-1">
-        <Workspace onAnalysisStateChange={setHasAnalysis} />
+        <Workspace
+          onAnalysisStateChange={setHasAnalysis}
+          loadSampleSignal={loadSampleSignal}
+        />
       </div>
 
       {/* Studio Footer */}

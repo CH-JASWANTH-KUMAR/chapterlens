@@ -74,6 +74,11 @@ export function ScoreCard({ analysis }: ScoreCardProps) {
               <span className="rounded-md border border-[var(--brand-accent-border)] bg-[var(--brand-accent-bg)] px-2 py-0.5 font-semibold text-[var(--brand-accent-text)]">
                 Document: {analysis.sourceDocument.fileName}
               </span>
+              {analysis.sourceDocument.isSample && (
+                <span className="rounded-md border border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 px-2 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-300">
+                  🧪 Sample Document
+                </span>
+              )}
               {analysis.sourceDocument.pageCount && (
                 <span>• {analysis.sourceDocument.pageCount} Pages</span>
               )}

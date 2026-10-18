@@ -1,6 +1,6 @@
 # ChapterLens 📖
 
-> **Understand your writing. Master difficult research. Keep your voice.**  
+> **Understand complex research. Audit prose cadence. Keep your voice.**  
 > A production-grade editorial clarity studio and guided research-reading environment for scholars, essayists, students, and authors.
 
 ---
@@ -25,6 +25,20 @@ ChapterLens operates with a strict philosophy: deterministic local computation, 
 - **Prerequisite Concepts**: Automatically isolates up to 3 foundational concepts required to grasp the selected passage, with an **Explore** action for deep diving.
 - **Source Grounding & Limitations**: Every explanation cites the supporting verbatim passage, page number, section heading, and immediate context fit. Explicitly flags when extracted text omits formulas, diagrams, or tables instead of guessing.
 - **Lightweight Comprehension Check**: Single, focused question testing core understanding with an on-demand **Reveal Answer & Explanation** reveal.
+
+### 3. 🧪 First-Time User Experience & Sample Research Paper
+- **Instant Interactive Exploration**: First-time visitors can explore ChapterLens immediately with a single click using the built-in, illustrative research sample paper (*"Sample Study: Attention & Cognitive Load"*).
+- **Authentic Pipeline Execution**: The sample paper is not simulated or pre-baked; it executes through the full mathematical analysis pipeline, computing authentic Flesch scores, syllable counts, sentence friction candidates, and document block indices live.
+- **Unambiguous Labeling**: Clear badges (`🧪 Sample Document`) and alert banners distinguish sample content from user manuscripts.
+- **Seamless Document Replacement**: One-click actions allow users to switch from the sample to their own `.pdf`, `.docx`, or `.txt` files or pasted text at any time.
+
+---
+
+## 👥 Target Users
+
+- **Researchers & Academics**: Quickly audit chapter drafts, research grant proposals, and review literature without abandoning complex original documents.
+- **Students & Lifelong Learners**: Understand dense, jargon-heavy papers across Beginner, Step-by-Step, and Technical levels with prerequisite concept maps.
+- **Authors & Essayists**: Identify syntactic friction, run-on sentences, and phonetic weight while preserving personal voice and literary style.
 
 ---
 
@@ -65,6 +79,7 @@ ANTHROPIC_API_KEY=your_anthropic_api_key_here
 
 ## ⚠️ Known Limitations & Scope Boundaries
 
+- **Supported Document Formats**: `.pdf` (text-based), `.docx` (Microsoft Word), `.txt` (plain text), and direct pasted text.
 - **Scanned Image-Only PDFs (OCR)**: ChapterLens extracts digitally embedded text layers. Scanned PDFs containing only bitmap images will trigger an `EMPTY_PAGES` warning indicating that OCR extraction is not included in this milestone.
 - **Formulas and Complex Diagrams**: Raw text extraction cannot reliably interpret visual diagrams, charts, or complex multi-line LaTeX equations. When passages reference missing equations or figures, ChapterLens explicitly states this in `limitationsNotice` rather than fabricating scientific claims.
 - **Independent Scientific Validation**: Guided reading explanations are intended for comprehension assistance, not peer-review validation of research conclusions.
@@ -104,10 +119,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 3. Run Quality & Test Commands
 ```bash
-# Run all 110 automated tests
+# Run all 116 automated tests across 12 test files
 npm test
 
-# Run TypeScript static analysis and linting
+# Run TypeScript static analysis and type validation
 npm run lint
 
 # Run optimized production build
@@ -118,7 +133,8 @@ npm run build
 
 ## 🧪 Automated Test Verification
 
-ChapterLens includes **110 automated tests across 11 test suites**:
+ChapterLens includes **116 automated tests across 12 test suites**:
+- `sample_document.test.ts` (6 tests): Illustrative sample document generation, ExtractedDocument conformance, character offset slice fidelity, real Flesch scoring integration without mocked data, bounded passage extraction, and user document replacement.
 - `reading_guided.test.ts` (29 tests): Context extraction (≤1200 chars), source location preservation, multi-level explanations, prerequisite concept bounding, Gemini/OpenAI/Anthropic provider adapters, sanitized error reporting, user consent gate, payload constraints, and boundary edge cases.
 - `document_extractors.test.ts` (13 tests): PDF, DOCX, TXT local extraction, multi-page page indexing, heading detection, and corrupted file handling.
 - `document_integration.test.ts` (8 tests): End-to-end document-to-analysis pipeline, locator offset mapping, and page-enriched candidate ranking.
@@ -136,4 +152,3 @@ ChapterLens includes **110 automated tests across 11 test suites**:
 ## 📄 License & Attribution
 
 Designed and engineered for researchers, writers, and students everywhere. Open, private, and deterministic.
-

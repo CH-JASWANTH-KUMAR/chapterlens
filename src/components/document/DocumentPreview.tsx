@@ -15,6 +15,7 @@ import {
   BookOpen,
   ShieldCheck,
   CheckCircle2,
+  FlaskConical,
 } from 'lucide-react';
 
 interface DocumentPreviewProps {
@@ -43,6 +44,12 @@ export function DocumentPreview({
     .filter((w) => w.length > 0).length;
 
   const getFormatBadge = () => {
+    if (document.isSample) {
+      return {
+        label: 'Sample Paper',
+        color: 'bg-amber-50 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
+      };
+    }
     switch (document.format) {
       case 'pdf':
         return {
@@ -135,6 +142,16 @@ export function DocumentPreview({
           </div>
         </div>
       </div>
+
+      {/* Sample Document Notice Banner */}
+      {document.isSample && (
+        <div className="border-b border-[var(--brand-accent-border)] bg-[var(--brand-accent-bg)] px-6 py-3.5 text-xs text-[var(--brand-accent-text)] flex items-start gap-2.5">
+          <FlaskConical className="h-4 w-4 shrink-0 text-[var(--brand-emerald)] mt-0.5" />
+          <div className="leading-relaxed">
+            <strong>Illustrative Research Paper Excerpt:</strong> This sample document demonstrates ChapterLens&apos;s real analysis pipeline. Readability scores, sentence difficulty rankings, and guided reading features are computed live from this text. Click <strong>Start Guided Reading</strong> to explore sentence explanations or <strong>Run Readability Audit</strong> to evaluate syntactic cadence.
+          </div>
+        </div>
+      )}
 
       {/* Warnings & Notices Banner (e.g. Scanned pages or skipped complex formatting) */}
       {document.warnings.length > 0 && (
@@ -240,13 +257,13 @@ export function DocumentPreview({
             className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-3.5 py-2 text-xs font-semibold text-[var(--text-main)] shadow-editorial-sm hover:border-[var(--border-strong)] hover:bg-[var(--canvas-card-hover)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)]"
           >
             <RefreshCw className="h-3.5 w-3.5 text-[var(--brand-emerald)]" />
-            <span>Replace File</span>
+            <span>{document.isSample ? 'Replace with My Document' : 'Replace File'}</span>
           </button>
 
           {showClearConfirm ? (
             <div className="flex items-center gap-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 px-2.5 py-1 border border-rose-200 dark:border-rose-900 animate-in fade-in">
               <span className="text-xs font-medium text-rose-800 dark:text-rose-300">
-                Clear document?
+                {document.isSample ? 'Clear sample document?' : 'Clear document?'}
               </span>
               <button
                 type="button"
@@ -271,7 +288,7 @@ export function DocumentPreview({
               className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-[var(--text-faint)] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-[var(--canvas-card-hover)] transition-colors"
             >
               <Trash2 className="h-3.5 w-3.5" />
-              <span>Clear</span>
+              <span>{document.isSample ? 'Clear Sample' : 'Clear'}</span>
             </button>
           )}
         </div>
