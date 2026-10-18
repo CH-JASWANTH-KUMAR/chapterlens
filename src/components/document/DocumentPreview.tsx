@@ -135,9 +135,12 @@ export function DocumentPreview({
             </span>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-2.5 py-1 text-[var(--text-muted)] font-editorial-mono">
+          <div
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--canvas-card)] px-2.5 py-1 text-[var(--text-muted)] font-editorial-mono"
+            title="Total raw words extracted from document stream (includes equations, numerals, and reference tokens)"
+          >
             <span>
-              <strong className="text-[var(--text-main)]">{wordCount.toLocaleString()}</strong> words
+              <strong className="text-[var(--text-main)]">{wordCount.toLocaleString()}</strong> Extracted Words
             </span>
           </div>
         </div>

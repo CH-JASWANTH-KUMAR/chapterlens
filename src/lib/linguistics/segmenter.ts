@@ -311,7 +311,66 @@ function createSentenceToken(
     longWordCount,
     complexPunctuationCount: semicolons + emDashes + colons + parens,
     commaCount: commas,
+    isNonProse: isNonProseSentence(rawText),
   };
+}
+
+/**
+ * Detects whether a sentence token or passage represents non-prose content,
+ * such as mathematical equation lines, pseudocode/code lines, or reference bibliography entries.
+ */
+export function isNonProseSentence(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) return true;
+
+  // 1. Standalone equation or math-dense formula
+  // Contains LaTeX wrappers or standalone math delimiters
+  if (/^\$\$[\s\S]*\$\$$|^\\\[[\s\S]*\\\]$|^\$[^$]+\$$/.test(trimmed)) return true;
+
+  // Function definition / formula assignment e.g. "f(x) = ...", "L(theta) = ...", "x_{t+1} = ...", "y = mx + b"
+  const isEquationAssignment =
+    /^[A-Za-z](?:_[A-Za-z0-9{}]+|\([A-Za-z0-9_,\s\\^+\-*/.]+\))?\s*=(?!=)/.test(trimmed);
+  if (isEquationAssignment) {
+    const hasMathTokens =
+      /[+\-*/^_\\^~∑∏√∫∂∇α-ωΑ-Ω]|\b(?:sqrt|exp|log|ln|sin|cos|tan|sum|prod|nabla|sigma|theta|alpha|beta|gamma|lambda|mu|pi|epsilon)\b/i.test(
+        trimmed
+      );
+    const hasCommonProseWords =
+      /\b(?:the|is|are|was|were|this|that|with|from|which|because|although)\b/i.test(trimmed);
+    if (hasMathTokens && !hasCommonProseWords) {
+      return true;
+    }
+  }
+
+  // General math operator density
+  const mathChars = (trimmed.match(/[=+\-*/\\_^{}<>≤≥≈≠±×÷∑∏√∫∂∇α-ωΑ-Ω]/g) || []).length;
+  const words = trimmed.match(/[A-Za-z]{2,}/g) || [];
+  const mathWords = (
+    trimmed.match(
+      /\b(?:sqrt|exp|log|ln|sin|cos|tan|det|min|max|argmax|argmin|sum|prod|nabla|sigma|theta|alpha|beta|gamma|lambda|mu|pi|epsilon|omega)\b/gi
+    ) || []
+  ).length;
+  const nonMathWords = words.length - mathWords;
+  if (mathChars >= 3 && (mathChars + mathWords * 2) / trimmed.length > 0.12 && nonMathWords <= 4) {
+    return true;
+  }
+
+  // 2. Pseudocode / Programming statements
+  const isCodeOrPseudocode =
+    /^(?:Algorithm\s+\d+|Input:|Output:|Require:|Ensure:|Initialize\b|for\s+.*(?:do:?|\{)|while\s+.*(?:do:?|\{)|if\s+.*(?:then:?|\{)|return\b|def\b|class\b|let\b|const\b|var\b|import\b|function\b)/i.test(
+      trimmed
+    ) ||
+    /^(?:for|while|if)\s*\(.*?\)\s*\{?$/i.test(trimmed);
+  if (isCodeOrPseudocode) return true;
+
+  // 3. Numbered bibliography / reference entries: e.g. "[1] Vaswani, A., ..." or "1. Kingma, D. P., ..."
+  const isReferenceEntry =
+    /^\[\d+\]\s+[A-Z]/.test(trimmed) ||
+    /^\[[A-Za-z0-9,\s\-]+\]\s+[A-Z]/.test(trimmed) ||
+    /^\d+\.\s+[A-Z][a-z]+,\s+[A-Z]\./.test(trimmed);
+  if (isReferenceEntry) return true;
+
+  return false;
 }
 
 /**

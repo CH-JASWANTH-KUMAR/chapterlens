@@ -18,7 +18,13 @@ export function analyzeChapter(text: string): AnalysisResult {
     .filter((p) => p.length > 0);
   const totalParagraphs = Math.max(1, paragraphs.length);
 
-  // Extract all clean words across text
+  // Total raw document tokens (including numbers and symbols)
+  const extractedWordCount = normalizedText
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w.length > 0).length;
+
+  // Extract all clean prose words across text (linguistic phonemes for syllables/cadence)
   const allWords = extractWords(normalizedText);
   const totalWords = allWords.length;
   const totalSentences = sentences.length;
@@ -30,6 +36,7 @@ export function analyzeChapter(text: string): AnalysisResult {
       clampedScore: 0,
       band: defaultBand,
       totalWords: 0,
+      extractedWordCount,
       totalSentences: 0,
       totalParagraphs: 0,
       totalSyllables: 0,
@@ -78,6 +85,7 @@ export function analyzeChapter(text: string): AnalysisResult {
     clampedScore,
     band,
     totalWords,
+    extractedWordCount,
     totalSentences,
     totalParagraphs,
     totalSyllables,

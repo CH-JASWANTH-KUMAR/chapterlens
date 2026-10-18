@@ -18,7 +18,8 @@ import { ExtractedDocument } from '../lib/document/types';
 import { SelectedPassage } from '../lib/reading/types';
 import { extractPassageContext } from '../lib/reading/contextExtractor';
 import { getSampleResearchDocument } from '../lib/document/sampleDocument';
-import { RotateCcw, UploadCloud, Edit3, BookOpen, BarChart3, Sparkles, X } from 'lucide-react';
+import { RotateCcw, UploadCloud, Edit3, BookOpen, BarChart3, Sparkles, X, Download } from 'lucide-react';
+import { DownloadReportModal } from './export/DownloadReportModal';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface WorkspaceProps {
@@ -42,6 +43,7 @@ export function Workspace({ onAnalysisStateChange, loadSampleSignal }: Workspace
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedSentenceId, setSelectedSentenceId] = useState<string | null>(null);
   const [rewriteSentence, setRewriteSentence] = useState<DifficultSentence | null>(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [undoState, setUndoState] = useState<RevisionUndoState | null>(null);
   const [revisionToast, setRevisionToast] = useState<{ message: string; rank: number } | null>(null);
 
@@ -497,6 +499,16 @@ export function Workspace({ onAnalysisStateChange, loadSampleSignal }: Workspace
                 )}
 
                 <button
+                  type="button"
+                  onClick={() => setIsPdfModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-strong)] bg-[var(--canvas-card)] px-3 py-1.5 text-xs font-semibold text-[var(--text-main)] shadow-editorial-sm hover:bg-[var(--canvas-card-hover)] hover:border-[var(--brand-emerald)] focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] transition-colors"
+                  title="Export complete analysis report as a publication-ready PDF"
+                >
+                  <Download className="h-3.5 w-3.5 text-[var(--brand-emerald)]" />
+                  <span>Download Analysis Report</span>
+                </button>
+
+                <button
                   onClick={handleNewAnalysis}
                   className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-strong)] bg-[var(--canvas-card)] px-3 py-1.5 text-xs font-semibold text-[var(--text-main)] shadow-editorial-sm hover:bg-[var(--canvas-card-hover)] hover:border-[var(--brand-emerald)] focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] transition-colors"
                 >
@@ -561,7 +573,7 @@ export function Workspace({ onAnalysisStateChange, loadSampleSignal }: Workspace
 
             {/* A. Readability Summary & Chapter Statistics */}
             <div id="readability-summary-section">
-              <ScoreCard analysis={analysis} />
+              <ScoreCard analysis={analysis} onDownloadReport={() => setIsPdfModalOpen(true)} />
             </div>
 
             {/* B. Full-Width Manuscript Inspector */}
@@ -601,6 +613,15 @@ export function Workspace({ onAnalysisStateChange, loadSampleSignal }: Workspace
           sentence={rewriteSentence}
           onClose={() => setRewriteSentence(null)}
           onApplyRevision={handleApplyRevision}
+        />
+      )}
+
+      {/* Download PDF Analysis Report Modal */}
+      {analysis && (
+        <DownloadReportModal
+          isOpen={isPdfModalOpen}
+          analysis={analysis}
+          onClose={() => setIsPdfModalOpen(false)}
         />
       )}
     </main>

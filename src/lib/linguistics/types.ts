@@ -1,4 +1,4 @@
-import { SourceLocation } from '../document/types';
+import { SourceLocation, DocumentExtractionWarning } from '../document/types';
 export type { SourceLocation };
 
 export interface SentenceToken {
@@ -15,6 +15,7 @@ export interface SentenceToken {
   complexPunctuationCount: number; // semicolons, em dashes, parentheses, colons
   commaCount: number;
   sourceLocation?: SourceLocation;
+  isNonProse?: boolean;
 }
 
 export interface ContributingSignals {
@@ -41,7 +42,10 @@ export interface DifficultSentence {
   signals: ContributingSignals;
   suggestedRewrite?: string;
   editorialTip?: string;
+  aiRewrite?: string;
+  aiProvider?: string;
   sourceLocation?: SourceLocation;
+  isNonProse?: boolean;
 }
 
 export interface ReadabilityBand {
@@ -59,7 +63,8 @@ export interface AnalysisResult {
   rawFleschScore: number;
   clampedScore: number;
   band: ReadabilityBand;
-  totalWords: number;
+  totalWords: number; // Analyzed prose words evaluated for syllables and cadence
+  extractedWordCount?: number; // Total raw extracted tokens/words in document
   totalSentences: number;
   totalParagraphs: number;
   totalSyllables: number;
@@ -78,6 +83,7 @@ export interface AnalysisResult {
     pageCount?: number;
     hasHeadings?: boolean;
     isSample?: boolean;
+    warnings?: DocumentExtractionWarning[];
   };
 }
 

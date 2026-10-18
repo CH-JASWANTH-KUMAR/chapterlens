@@ -318,8 +318,12 @@ export function identifyHardestSentences(
 ): DifficultSentence[] {
   if (tokens.length === 0) return [];
 
-  // Score each sentence
-  const scored = tokens.map((token) => {
+  // Exclude non-prose content (equations, pseudocode, bibliography entries) from prose review
+  const proseTokens = tokens.filter((t) => !t.isNonProse);
+  const eligibleTokens = proseTokens.length > 0 ? proseTokens : tokens;
+
+  // Score each eligible sentence
+  const scored = eligibleTokens.map((token) => {
     const { score, signals, primaryIssue, explanation } = scoreSentenceDifficulty(token, weights);
     return {
       token,
@@ -365,6 +369,7 @@ export function identifyHardestSentences(
       signals: item.signals,
       suggestedRewrite: guidance.suggestedRewrite,
       editorialTip: guidance.editorialTip,
+      isNonProse: item.token.isNonProse,
     };
   });
 }

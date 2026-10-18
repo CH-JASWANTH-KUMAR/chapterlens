@@ -2,13 +2,14 @@
 
 import React from 'react';
 import { AnalysisResult } from '../lib/linguistics/types';
-import { Clock, BookText, Layers, FileText, AlertTriangle, CheckCircle2, Award } from 'lucide-react';
+import { Clock, BookText, Layers, FileText, AlertTriangle, CheckCircle2, Award, Download } from 'lucide-react';
 
 interface ScoreCardProps {
   analysis: AnalysisResult;
+  onDownloadReport?: () => void;
 }
 
-export function ScoreCard({ analysis }: ScoreCardProps) {
+export function ScoreCard({ analysis, onDownloadReport }: ScoreCardProps) {
   const {
     clampedScore,
     rawFleschScore,
@@ -53,7 +54,7 @@ export function ScoreCard({ analysis }: ScoreCardProps) {
       aria-labelledby="readability-summary-heading"
       className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--canvas-card)] p-6 sm:p-8 shadow-editorial transition-all duration-200"
     >
-      {/* Header bar with diagnostic classification and reliability status */}
+      {/* Header bar with diagnostic classification, reliability status, and download report button */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between border-b border-[var(--border-subtle)] pb-6">
         <div>
           <span className="text-[11px] font-semibold tracking-wider uppercase text-[var(--brand-emerald)]">
@@ -89,8 +90,20 @@ export function ScoreCard({ analysis }: ScoreCardProps) {
           )}
         </div>
 
-        {/* Statistical Reliability Pill */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Action Buttons & Reliability Pill */}
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {onDownloadReport && (
+            <button
+              type="button"
+              onClick={onDownloadReport}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-strong)] bg-[var(--canvas-card)] px-3 py-1.5 text-xs font-semibold text-[var(--text-main)] shadow-editorial-sm hover:bg-[var(--canvas-card-hover)] hover:border-[var(--brand-emerald)] focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] transition-colors"
+              title="Export complete analysis report as a publication-ready PDF"
+            >
+              <Download className="h-3.5 w-3.5 text-[var(--brand-emerald)]" />
+              <span>Download Analysis Report</span>
+            </button>
+          )}
+
           {isStatisticallyReliable ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--brand-accent-border)] bg-[var(--brand-accent-bg)] px-3 py-1 text-xs font-semibold text-[var(--brand-accent-text)]">
               <CheckCircle2 className="h-3.5 w-3.5 text-[var(--brand-emerald)]" />
@@ -203,11 +216,19 @@ export function ScoreCard({ analysis }: ScoreCardProps) {
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] p-3.5 text-center sm:text-left transition-colors hover:border-[var(--border-strong)]">
             <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[var(--text-faint)]">
               <FileText className="h-3.5 w-3.5 text-[var(--brand-emerald)]" />
-              <span className="text-xs font-medium">Total Words</span>
+              <span className="text-xs font-medium">Analyzed Words</span>
             </div>
             <div className="mt-1 font-editorial-serif text-xl sm:text-2xl font-bold text-[var(--text-main)]">
               {totalWords.toLocaleString()}
             </div>
+            {analysis.extractedWordCount && analysis.extractedWordCount !== totalWords && (
+              <div
+                className="text-[10px] text-[var(--text-faint)] mt-0.5 truncate"
+                title={`Analyzed prose words (${totalWords.toLocaleString()}) out of ${analysis.extractedWordCount.toLocaleString()} total extracted document tokens`}
+              >
+                of {analysis.extractedWordCount.toLocaleString()} doc tokens
+              </div>
+            )}
           </div>
 
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] p-3.5 text-center sm:text-left transition-colors hover:border-[var(--border-strong)]">

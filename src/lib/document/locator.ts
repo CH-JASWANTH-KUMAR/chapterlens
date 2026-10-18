@@ -86,6 +86,10 @@ export function enrichAnalysisWithDocument(
     ...analysis,
     difficultSentences: enrichedDifficultSentences,
     sentences: enrichedSentences,
+    extractedWordCount: document.fullText
+      .trim()
+      .split(/\s+/)
+      .filter((w) => w.length > 0).length,
     sourceDocument: {
       id: document.id,
       fileName: document.fileName,
@@ -93,6 +97,7 @@ export function enrichAnalysisWithDocument(
       pageCount: document.pageCount,
       hasHeadings: document.hasHeadings,
       isSample: Boolean(document.isSample),
+      warnings: document.warnings,
     },
   };
 }
