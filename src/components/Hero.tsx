@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Gauge, BookOpen, ShieldCheck, ArrowDown, FlaskConical, Layers, Activity } from 'lucide-react';
+import Image from 'next/image';
+import { Gauge, BookOpen, ShieldCheck, ArrowDown, FlaskConical, FileText, Activity } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
-import { ResearchPaperSceneWrapper } from './visuals/ResearchPaperSceneWrapper';
 import { CadenceScannerVisual } from './visuals/CadenceScannerVisual';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -13,7 +13,7 @@ interface HeroProps {
 }
 
 export function Hero({ onScrollToEditor, onTrySample }: HeroProps) {
-  const [visualMode, setVisualMode] = useState<'3d' | 'scanner'>('3d');
+  const [visualMode, setVisualMode] = useState<'illustration' | 'scanner'>('illustration');
 
   return (
     <section className="relative overflow-hidden pt-8 pb-10 sm:pt-12 sm:pb-12 border-b border-[var(--border-subtle)]">
@@ -46,7 +46,7 @@ export function Hero({ onScrollToEditor, onTrySample }: HeroProps) {
                   <h3 className="text-xs font-bold text-[var(--text-main)]">Readability Audit</h3>
                 </div>
                 <p className="mt-1.5 text-[11px] leading-normal text-[var(--text-faint)]">
-                  Compute exact Flesch scores, rank high-friction sentences, and pinpoint revisions—100% offline.
+                  Compute exact Flesch scores, rank high-friction sentences, and pinpoint revisions (100% offline).
                 </p>
               </div>
 
@@ -101,7 +101,7 @@ export function Hero({ onScrollToEditor, onTrySample }: HeroProps) {
             </div>
           </div>
 
-          {/* Right Column: Purposeful Interactive Visual Studio (Three.js 3D Paper Model & Anime.js Cadence Scanner) */}
+          {/* Right Column: Purposeful Interactive Visual Studio */}
           <div className="lg:col-span-5 flex flex-col items-center lg:items-end space-y-3">
             {/* Visual Mode Selector Tabs */}
             <div
@@ -112,17 +112,17 @@ export function Hero({ onScrollToEditor, onTrySample }: HeroProps) {
               <button
                 type="button"
                 role="tab"
-                id="tab-hero-3d"
-                aria-selected={visualMode === '3d'}
-                onClick={() => setVisualMode('3d')}
+                id="tab-hero-illustration"
+                aria-selected={visualMode === 'illustration'}
+                onClick={() => setVisualMode('illustration')}
                 className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all focus-visible:outline-2 focus-visible:outline-[var(--brand-emerald)] ${
-                  visualMode === '3d'
+                  visualMode === 'illustration'
                     ? 'bg-[var(--canvas-card)] text-[var(--brand-emerald)] shadow-xs border border-[var(--border-subtle)]'
                     : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
                 }`}
               >
-                <Layers className="h-3.5 w-3.5" />
-                <span>3D Manuscript</span>
+                <FileText className="h-3.5 w-3.5" />
+                <span>Research Manuscript</span>
               </button>
 
               <button
@@ -145,16 +145,25 @@ export function Hero({ onScrollToEditor, onTrySample }: HeroProps) {
             {/* Active Visual Container with Motion Transitions */}
             <div className="w-full max-w-md min-h-[340px] flex items-center justify-center">
               <AnimatePresence mode="wait">
-                {visualMode === '3d' ? (
+                {visualMode === 'illustration' ? (
                   <motion.div
-                    key="hero-3d-visual"
+                    key="hero-illustration-visual"
                     initial={{ opacity: 0, scale: 0.96 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.96 }}
                     transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                     className="w-full"
                   >
-                    <ResearchPaperSceneWrapper />
+                    <div className="relative w-full rounded-2xl border border-[var(--border-subtle)] bg-[var(--canvas-card)] p-3 sm:p-4 shadow-editorial overflow-hidden">
+                      <Image
+                        src="/brand-assets/chapterlens-hero-illustration.png"
+                        alt="ChapterLens editorial research manuscript analysis illustration"
+                        width={560}
+                        height={380}
+                        priority
+                        className="w-full h-auto rounded-xl object-contain"
+                      />
+                    </div>
                   </motion.div>
                 ) : (
                   <motion.div

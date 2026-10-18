@@ -16,7 +16,7 @@ export function sanitizePdfText(str: string): string {
   return str
     .replace(/[“”]/g, '"')
     .replace(/[‘’]/g, "'")
-    .replace(/—/g, ' -- ')
+    .replace(/\u2014/g, ' -- ')
     .replace(/–/g, ' - ')
     .replace(/…/g, '...')
     .replace(/[•·]/g, '*')

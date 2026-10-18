@@ -16,7 +16,7 @@ export const SAMPLE_PASSAGES: SamplePassage[] = [
 
 "Hold the loupe steady, Elian," the old man murmured without lifting his gaze from the balance wheel. "A single tremor of the wrist will shear the pinion teeth, and three months of lathe work will dissolve into scrap."
 
-Elian gripped the cedar handle of the magnifier until his knuckles turned chalky white. Although he had spent four arduous winters memorizing the intricate kinematics of celestial chronometers—calculating gear ratios by tallow candlelight and filing infinitesimal escapement pallets until his fingertips bled—his pulse still quickened whenever the master approached the delicate hairspring. The mechanism, originally commissioned by the Arch-Chancellor of the Northern Marches, contained seventeen jeweled bearings carved from uncut Ceylon sapphires.
+Elian gripped the cedar handle of the magnifier until his knuckles turned chalky white. Although he had spent four arduous winters memorizing the intricate kinematics of celestial chronometers (calculating gear ratios by tallow candlelight and filing infinitesimal escapement pallets until his fingertips bled), his pulse still quickened whenever the master approached the delicate hairspring. The mechanism, originally commissioned by the Arch-Chancellor of the Northern Marches, contained seventeen jeweled bearings carved from uncut Ceylon sapphires.
 
 "Is the tension calibrated?" Elian asked.
 

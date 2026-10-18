@@ -68,7 +68,7 @@ describe('Sentence Segmentation & Offset Preservation Engine', () => {
   });
 
   it('extracts clean words properly', () => {
-    const words = extractWords('The clockmaker’s apprentice—eager, yet trembling—held the 17th gear.');
+    const words = extractWords('The clockmaker’s apprentice\u2014eager, yet trembling\u2014held the 17th gear.');
     expect(words).toContain('The');
     expect(words).toContain('clockmaker’s');
     expect(words).toContain('apprentice');

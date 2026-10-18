@@ -600,7 +600,7 @@ describe('Guided Research Reading (Milestone 2)', () => {
       expect(networkCallCount).toBe(1);
     });
 
-    it('verifies outbound payload contains only selected passage, bounded context, and location — never full document', () => {
+    it('verifies outbound payload contains only selected passage, bounded context, and location: never full document', () => {
       const fullManuscript = 'Chapter 1. '.repeat(500) + 'A confusing technical sentence.' + ' Chapter 2. '.repeat(500);
       const testDoc: ExtractedDocument = {
         id: 'doc-confidential',

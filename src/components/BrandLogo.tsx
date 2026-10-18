@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 interface BrandLogoProps {
   className?: string;
@@ -6,108 +7,18 @@ interface BrandLogoProps {
 }
 
 /**
- * ChapterLens Editorial Symbol:
- * A clean, distinctive folio and optical lens reading mark.
- * Proportioned for pixel-crisp rendering from 16px to 64px.
+ * ChapterLens Primary Product Symbol:
+ * Renders the official brand logo mark asset with responsive sizing.
  */
 export function BrandLogo({ className = '', size = 32 }: BrandLogoProps) {
   return (
-    <svg
+    <Image
+      src="/brand-assets/chapterlens-logo-mark.png"
+      alt="ChapterLens logo mark"
       width={size}
       height={size}
-      viewBox="0 0 32 32"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={`shrink-0 transition-transform duration-200 ${className}`}
-      aria-hidden="true"
-    >
-      {/* Editorial Badge Background */}
-      <rect
-        width="32"
-        height="32"
-        rx="8"
-        fill="var(--brand-forest)"
-        className="transition-colors duration-200"
-      />
-
-      {/* Manuscript Folio Leaf */}
-      <path
-        d="M8.5 7.5H19L23.5 12V24.5H8.5V7.5Z"
-        stroke="#F4F6F4"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity="0.85"
-      />
-
-      {/* Folded Corner */}
-      <path
-        d="M19 7.5V12H23.5"
-        stroke="#F4F6F4"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity="0.85"
-      />
-
-      {/* Prose Cadence Lines */}
-      <line
-        x1="11.5"
-        y1="12"
-        x2="16"
-        y2="12"
-        stroke="#F4F6F4"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-        opacity="0.6"
-      />
-      <line
-        x1="11.5"
-        y1="15.5"
-        x2="15"
-        y2="15.5"
-        stroke="#F4F6F4"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-        opacity="0.6"
-      />
-      <line
-        x1="11.5"
-        y1="19"
-        x2="15"
-        y2="19"
-        stroke="#F4F6F4"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-        opacity="0.6"
-      />
-
-      {/* The Optical Inspection Lens */}
-      <circle
-        cx="19.5"
-        cy="18.5"
-        r="4.5"
-        stroke="var(--brand-emerald)"
-        strokeWidth="1.8"
-        fill="var(--brand-forest)"
-      />
-
-      {/* Lens Focal Center */}
-      <circle
-        cx="19.5"
-        cy="18.5"
-        r="1.2"
-        fill="var(--brand-emerald)"
-      />
-
-      {/* Precision Lens Handle */}
-      <path
-        d="M22.8 21.8L25.5 24.5"
-        stroke="var(--brand-emerald)"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
+      className={`shrink-0 rounded-lg object-contain ${className}`}
+    />
   );
 }
 
@@ -119,7 +30,8 @@ interface BrandWordmarkProps {
 
 /**
  * Consolidated Brand Wordmark:
- * Used identically across Header and Hero to ensure absolute visual consistency.
+ * Pairs the official logo mark with actual HTML text so that the brand
+ * title adapts crisply across both light and dark themes.
  */
 export function BrandWordmark({
   className = '',
@@ -154,5 +66,28 @@ export function BrandWordmark({
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * Fixed Dark-Green Wordmark Image:
+ * Uses the supplied wordmark PNG on fixed light backgrounds or export documents
+ * where a fixed raster wordmark is appropriate.
+ */
+export function BrandWordmarkImage({
+  className = '',
+  width = 160,
+}: {
+  className?: string;
+  width?: number;
+}) {
+  return (
+    <Image
+      src="/brand-assets/chapterlens-wordmark.png"
+      alt="ChapterLens"
+      width={width}
+      height={Math.round(width * 0.25)}
+      className={`object-contain ${className}`}
+    />
   );
 }

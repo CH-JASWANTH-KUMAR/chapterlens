@@ -78,7 +78,7 @@ export function EducationalSection() {
             </p>
           </div>
           <div className="mt-4 rounded-xl bg-[var(--canvas-card-subtle)] border border-[var(--border-subtle)] p-3 text-[11px] text-[var(--text-muted)] italic text-center sm:text-left">
-            &ldquo;Write hard and clear about what hurts.&rdquo; — Ernest Hemingway
+            &ldquo;Write hard and clear about what hurts.&rdquo; (Ernest Hemingway)
           </div>
         </div>
 
@@ -167,7 +167,7 @@ export function EducationalSection() {
             Crafting Clarity Without Sacrificing Soul
           </h3>
           <p className="text-xs sm:text-sm leading-relaxed text-[var(--text-muted)]">
-            Every great story balances compression and elaboration. ChapterLens gives authors transparency into where readers slow down, stumble, or hold their breath—so you can decide whether that cognitive pause is intentional artistry or accidental friction.
+            Every great story balances compression and elaboration. ChapterLens gives authors transparency into where readers slow down, stumble, or hold their breath, so you can decide whether that cognitive pause is intentional artistry or accidental friction.
           </p>
         </div>
       </div>

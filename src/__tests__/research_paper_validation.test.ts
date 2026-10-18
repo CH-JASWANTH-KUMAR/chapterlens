@@ -6,7 +6,7 @@ import { enrichAnalysisWithDocument } from '../lib/document/locator';
 import { ExtractedDocument, ExtractedBlock } from '../lib/document/types';
 import { extractPassageContext } from '../lib/reading/contextExtractor';
 
-describe('Milestone 3.2 — Validation with Representative Research Papers', () => {
+describe('Milestone 3.2: Validation with Representative Research Papers', () => {
   // 1. Adam: A Method for Stochastic Optimization (Kingma & Ba, 2014 - arXiv:1412.6980)
   describe('Adam (arXiv:1412.6980) Validation', () => {
     const adamPassage = `We introduce Adam, an algorithm for first-order gradient-based optimization of stochastic objective functions, based on adaptive estimates of lower-order moments. In Eq. (1) and Eq. 2, the moving averages of the gradient and squared gradient are computed with hyperparameters beta_1 = 0.9 and beta_2 = 0.999. Some of Adam’s advantages are that the magnitudes of parameter updates are invariant to rescaling of the gradient, its stepsizes are approximately bounded by the stepsize hyperparameter, it does not require a stationary objective, it works with sparse gradients, and it naturally performs a form of step size annealing. The method was evaluated against AdaGrad (Duchi et al., 2011) and RMSProp.`;
@@ -147,7 +147,7 @@ describe('Milestone 3.2 — Validation with Representative Research Papers', () 
 
   // 6. The Lottery Ticket Hypothesis (Frankle & Carbin, 2018 - arXiv:1803.03635)
   describe('The Lottery Ticket Hypothesis (arXiv:1803.03635) Validation', () => {
-    const lotteryPassage = `Neural network pruning techniques can reduce the parameter counts of trained networks by over 90%, decreasing storage requirements and improving computational performance of inference without compromising accuracy. However, contemporary experience is that the sparse architectures produced by pruning are difficult to train from the start, which would similarly improve training performance. We find that a standard pruning technique naturally uncovers subnetworks whose initializations made them capable of training effectively. This leads to the Lottery Ticket Hypothesis: a randomly-initialized, dense neural network contains a subnetwork that is initialized such that—when trained in isolation—it can match the test accuracy of the original network after training for at most the same number of iterations.`;
+    const lotteryPassage = `Neural network pruning techniques can reduce the parameter counts of trained networks by over 90%, decreasing storage requirements and improving computational performance of inference without compromising accuracy. However, contemporary experience is that the sparse architectures produced by pruning are difficult to train from the start, which would similarly improve training performance. We find that a standard pruning technique naturally uncovers subnetworks whose initializations made them capable of training effectively. This leads to the Lottery Ticket Hypothesis: a randomly-initialized, dense neural network contains a subnetwork that is initialized such that\u2014when trained in isolation\u2014it can match the test accuracy of the original network after training for at most the same number of iterations.`;
 
     it('correctly parses em-dash clauses and evaluates complex punctuation density', () => {
       const sentences = segmentText(lotteryPassage);

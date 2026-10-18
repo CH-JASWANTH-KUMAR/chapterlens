@@ -8,7 +8,7 @@ import { identifyHardestSentences } from '../lib/linguistics/difficulty';
 import { ExtractedDocument } from '../lib/document/types';
 import { AnalysisResult } from '../lib/linguistics/types';
 
-describe('Milestone 3.3 — PDF Report Export and Research Analysis Accuracy', () => {
+describe('Milestone 3.3: PDF Report Export and Research Analysis Accuracy', () => {
   const sampleAcademicText = `
 Linear models often fail to generalize across non-stationary distributions in real-world scenarios.
 When the dimensionality of the parameter space exceeds the sample size, empirical risk minimization leads to overfitting.
@@ -59,7 +59,7 @@ Thus, optimal balance requires data-driven cross-validation across diverse parti
     });
 
     it('correctly formats and sanitizes typography and Unicode characters', () => {
-      const rawString = '“Smart quotes”, ‘apostrophes’, em—dash, en–dash, ellipsis…, and bullet • symbols.';
+      const rawString = '“Smart quotes”, ‘apostrophes’, em\u2014dash, en–dash, ellipsis…, and bullet • symbols.';
       const sanitized = sanitizePdfText(rawString);
 
       expect(sanitized).toContain('"Smart quotes"');
@@ -68,7 +68,7 @@ Thus, optimal balance requires data-driven cross-validation across diverse parti
       expect(sanitized).toContain('...');
       expect(sanitized).not.toContain('“');
       expect(sanitized).not.toContain('”');
-      expect(sanitized).not.toContain('—');
+      expect(sanitized).not.toContain('\u2014');
     });
 
     it('honors option toggles to omit sentence excerpts and suggestions', () => {

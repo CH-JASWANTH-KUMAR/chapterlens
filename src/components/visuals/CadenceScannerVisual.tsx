@@ -151,7 +151,7 @@ export function CadenceScannerVisual({ className = '' }: CadenceScannerVisualPro
               Prose Cadence Diagnostics
             </span>
             <span className="hidden sm:inline-block ml-2 text-[10px] font-editorial-mono text-[var(--brand-emerald)] uppercase font-semibold">
-              Live Engine
+              Illustrative Demo
             </span>
           </div>
         </div>

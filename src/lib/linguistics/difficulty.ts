@@ -248,8 +248,8 @@ export function generateDeterministicEditingGuidance(
   }
 
   // 3. Em-dash parenthetical flattening
-  if (!didTransform && (working.includes('—') || working.includes('--'))) {
-    const emDashMatch = working.match(/^(.*?)—(.*?)—(.*)$/);
+  if (!didTransform && (working.includes('\u2014') || working.includes('--'))) {
+    const emDashMatch = working.match(/^(.*?)(?:\u2014|--)(.*?)(?:\u2014|--)(.*)$/);
     if (emDashMatch) {
       const [, before, aside, after] = emDashMatch;
       working = `${before.trim()}, ${aside.trim()}, ${after.trim()}`;

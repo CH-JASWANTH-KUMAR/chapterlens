@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import {
   ExplanationLevel,
   PassageExplanation,
@@ -59,8 +60,14 @@ export function ExplanationPanel({
         aria-label="Guided Explanation Panel"
         className="flex flex-col w-full lg:w-96 rounded-2xl border border-[var(--border-subtle)] bg-[var(--canvas-card)] shadow-editorial p-6 text-center justify-center items-center space-y-4 shrink-0 transition-all duration-200 min-h-[380px]"
       >
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--canvas-card-subtle)] border border-[var(--border-subtle)] text-[var(--brand-emerald)]">
-          <BookMarked className="h-6 w-6" />
+        <div className="relative w-full max-w-[200px] overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--canvas-card-subtle)] p-2 shadow-xs">
+          <Image
+            src="/brand-assets/chapterlens-guided-reading-illustration.png"
+            alt="Guided research reading illustration"
+            width={280}
+            height={200}
+            className="w-full h-auto rounded-lg object-contain"
+          />
         </div>
         <div className="space-y-1.5 max-w-xs">
           <h3 className="font-editorial-serif text-base sm:text-lg font-bold text-[var(--text-main)]">

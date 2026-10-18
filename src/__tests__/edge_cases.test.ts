@@ -100,7 +100,7 @@ describe('Comprehensive Edge Cases Suite (18 Scenarios)', () => {
 
   // Case 12: Em dashes, semicolons, and parentheses
   it('Case 12: Em dashes, semicolons, and parentheses', () => {
-    const text = 'The escapement—an infinitesimal brass wheel; delicately forged (in 1842)—clicked incessantly.';
+    const text = 'The escapement\u2014an infinitesimal brass wheel; delicately forged (in 1842)\u2014clicked incessantly.';
     const tokens = segmentText(text);
     expect(tokens).toHaveLength(1);
     expect(tokens[0].complexPunctuationCount).toBeGreaterThanOrEqual(3);

@@ -34,7 +34,7 @@ export function getSampleResearchDocument(): ExtractedDocument {
       level: 1,
       paragraphs: [
         'Reading dense technical prose imposes significant cognitive friction on human readers.',
-        'When complex technical sentences introduce multiple nested subordinate clauses without immediate predicate resolution—particularly when accompanied by specialized polysyllabic terminology, ungrounded acronyms, and parenthetical digressions—the reader\'s working memory buffer becomes rapidly saturated.',
+        'When complex technical sentences introduce multiple nested subordinate clauses without immediate predicate resolution, particularly when accompanied by specialized polysyllabic terminology, ungrounded acronyms, and parenthetical digressions, the reader\'s working memory buffer becomes rapidly saturated.',
         'For this reason, editorial clarity does not demand omitting technical precision. Rather, effective scientific writing anchors difficult formulations in tangible analogies before introducing formal methodological derivations.',
       ],
     },

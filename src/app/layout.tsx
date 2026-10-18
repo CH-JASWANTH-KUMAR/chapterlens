@@ -1,27 +1,66 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeProvider } from '../context/ThemeContext';
 
+export const viewport: Viewport = {
+  themeColor: '#193d2d',
+};
+
 export const metadata: Metadata = {
-  title: 'ChapterLens — Understand your writing. Keep your voice.',
+  metadataBase: new URL('https://chapterlens-five.vercel.app'),
+  title: 'ChapterLens | Research Paper Clarity and Readability',
   description:
-    'A production-grade editorial readability studio for authors. Calculate exact Flesch Reading Ease scores, isolate your chapter’s hardest sentences, and inspect transparent linguistic signals entirely inside your browser.',
+    'Analyze research-paper readability, find difficult passages, and explore contextual explanations. Documents are processed in your browser, and external AI requests require explicit consent.',
+  applicationName: 'ChapterLens',
   keywords: [
-    'readability score',
+    'research paper readability',
     'Flesch Reading Ease',
-    'author tools',
-    'editing software',
+    'academic clarity',
+    'scholarly reading',
     'sentence complexity',
-    'chapter analysis',
-    'fiction writing tool',
+    'guided research reading',
+    'document analysis',
+    'in-browser analysis',
   ],
   authors: [{ name: 'ChapterLens Studio' }],
-  robots: 'index, follow',
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: 'https://chapterlens-five.vercel.app',
+  },
+  icons: {
+    icon: [
+      { url: '/brand-assets/chapterlens-logo-mark.png' },
+      { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/brand-assets/chapterlens-logo-mark.png' },
+    ],
+  },
   openGraph: {
-    title: 'ChapterLens — Editorial Readability Studio',
+    title: 'ChapterLens | Research Paper Clarity and Readability',
     description:
-      'Understand your writing. Keep your voice. Instant, private chapter readability analysis with transparent linguistic diagnostics.',
+      'Analyze research-paper readability, find difficult passages, and explore contextual explanations. Documents are processed in your browser, and external AI requests require explicit consent.',
+    url: 'https://chapterlens-five.vercel.app',
+    siteName: 'ChapterLens',
     type: 'website',
+    images: [
+      {
+        url: '/brand-assets/chapterlens-og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'ChapterLens - Research Paper Clarity and Readability Studio',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ChapterLens | Research Paper Clarity and Readability',
+    description:
+      'Analyze research-paper readability, find difficult passages, and explore contextual explanations. Documents are processed in your browser, and external AI requests require explicit consent.',
+    images: ['/brand-assets/chapterlens-og-image.png'],
   },
 };
 

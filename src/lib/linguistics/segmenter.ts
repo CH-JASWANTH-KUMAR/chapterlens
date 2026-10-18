@@ -202,7 +202,7 @@ export function segmentText(originalText: string): SentenceToken[] {
       const remainder = originalText.slice(terminatorEndIndex);
       const isQuoteTerminated = /['"”’»›]/.test(originalText[terminatorEndIndex - 1]);
       if (isQuoteTerminated) {
-        if (remainder.startsWith('—') || remainder.startsWith('--')) {
+        if (remainder.startsWith('\u2014') || remainder.startsWith('--')) {
           currentIndex = terminatorEndIndex;
           continue;
         }
@@ -293,7 +293,7 @@ function createSentenceToken(
 
   // Count punctuation signals
   const semicolons = (rawText.match(/;/g) || []).length;
-  const emDashes = (rawText.match(/—|--/g) || []).length;
+  const emDashes = (rawText.match(/\u2014|--/g) || []).length;
   const colons = (rawText.match(/:/g) || []).length;
   const parens = (rawText.match(/\([^)]*\)/g) || []).length;
   const commas = (rawText.match(/,/g) || []).length;
