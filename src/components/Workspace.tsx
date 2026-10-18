@@ -231,9 +231,32 @@ export function Workspace({ onAnalysisStateChange, loadSampleSignal }: Workspace
 
     let updatedDoc: ExtractedDocument | null = null;
     if (document) {
+      const delta = newSentenceText.length - sentence.text.length;
+      const updatedBlocks = document.blocks.map((block) => {
+        if (startIndex >= block.startIndex && startIndex < block.endIndex) {
+          const relStart = startIndex - block.startIndex;
+          const relEnd = Math.min(block.text.length, relStart + sentence.text.length);
+          const newBlockText =
+            block.text.slice(0, relStart) + newSentenceText + block.text.slice(relEnd);
+          return {
+            ...block,
+            text: newBlockText,
+            endIndex: block.endIndex + delta,
+          };
+        } else if (block.startIndex > startIndex) {
+          return {
+            ...block,
+            startIndex: block.startIndex + delta,
+            endIndex: block.endIndex + delta,
+          };
+        }
+        return block;
+      });
+
       updatedDoc = {
         ...document,
         fullText: updatedText,
+        blocks: updatedBlocks,
       };
       setDocument(updatedDoc);
     }

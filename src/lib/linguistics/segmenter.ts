@@ -5,14 +5,24 @@ import { countSyllablesInWord, isPolysyllabic } from './syllables';
 const COMMON_ABBREVIATIONS = new Set([
   'mr', 'mrs', 'ms', 'dr', 'prof', 'sr', 'jr', 'rev', 'gen', 'col', 'capt', 'lt',
   'sgt', 'gov', 'sen', 'rep', 'pres', 'fr', 'br', 'hon', 'maj', 'cpl', 'pvt', 'adm',
-  'cmdr', 'supt', 'insp', 'det', 'st', 'mt', 'etc', 'eg', 'ie', 'vs', 'fig', 'vol',
-  'dept', 'est', 'approx', 'al', 'cf', 'ca', 'us', 'uk', 'un', 'eu', 'dc', 'ny', 'no',
+  'cmdr', 'supt', 'insp', 'det', 'st', 'mt', 'etc', 'eg', 'ie', 'vs', 'fig', 'figs',
+  'figure', 'figures', 'eq', 'eqs', 'equation', 'equations', 'sec', 'secs', 'section',
+  'sections', 'tab', 'tabs', 'table', 'tables', 'ref', 'refs', 'vol', 'vols', 'dept',
+  'est', 'approx', 'al', 'cf', 'ca', 'us', 'uk', 'un', 'eu', 'dc', 'ny', 'no', 'nos',
+  'pp', 'p', 'ch', 'app', 'univ',
 ]);
 
 const TITLE_ABBREVIATIONS = new Set([
   'mr', 'mrs', 'ms', 'dr', 'prof', 'rev', 'sr', 'jr', 'st', 'mt', 'col', 'gen',
   'capt', 'lt', 'sgt', 'gov', 'sen', 'rep', 'pres', 'fr', 'br', 'hon', 'maj',
   'cpl', 'pvt', 'adm', 'cmdr', 'supt', 'insp', 'det',
+]);
+
+const SCHOLARLY_ABBREVIATIONS = new Set([
+  'fig', 'figs', 'figure', 'figures', 'eq', 'eqs', 'equation', 'equations',
+  'sec', 'secs', 'section', 'sections', 'tab', 'tabs', 'table', 'tables',
+  'ref', 'refs', 'vol', 'vols', 'no', 'nos', 'pp', 'p', 'ch', 'app',
+  'al', 'cf', 'approx', 'dept', 'est', 'univ',
 ]);
 
 /**
@@ -142,7 +152,7 @@ export function segmentText(originalText: string): SentenceToken[] {
         const lastWordMatch = textBefore.match(/([A-Za-z]+)$/);
         if (lastWordMatch) {
           const cleanAbbr = lastWordMatch[1].toLowerCase();
-          const isMultiDotAbbr = /(?:^|\s|\()(?:e\.g|i\.e|vs|cf|al)$/i.test(textBefore);
+          const isMultiDotAbbr = /(?:^|\s|\()(?:e\.g|i\.e|vs|cf)$/i.test(textBefore);
 
           if (isAbbreviation(cleanAbbr) || isMultiDotAbbr) {
             const afterTerminator = originalText.slice(terminatorEndIndex).trimStart();
@@ -157,6 +167,29 @@ export function segmentText(originalText: string): SentenceToken[] {
               if (TITLE_ABBREVIATIONS.has(cleanAbbr) || isMultiDotAbbr) {
                 currentIndex = terminatorEndIndex;
                 continue;
+              }
+              // Scholarly abbreviations followed by numbers, brackets, citation years, or lists
+              if (SCHOLARLY_ABBREVIATIONS.has(cleanAbbr)) {
+                // Followed by digit (Fig. 1, Eq. 2, Sec. 3, p. 15, pp. 20-30, vol. 4, no. 5)
+                if (nextChar >= '0' && nextChar <= '9') {
+                  currentIndex = terminatorEndIndex;
+                  continue;
+                }
+                // Followed by citation bracket or equation paren: Eq. (1), Ref. [2], et al. (2018), et al. [5]
+                if (nextChar === '(' || nextChar === '[') {
+                  currentIndex = terminatorEndIndex;
+                  continue;
+                }
+                // Followed by continuation comma or semicolon: (Peters et al., 2018; Kingma et al., 2014)
+                if (nextChar === ',' || nextChar === ';') {
+                  currentIndex = terminatorEndIndex;
+                  continue;
+                }
+                // Followed by Roman numeral or single uppercase letter: Fig. A, Part I, Vol. IV
+                if (/^(?:[IVXLCDM]+|[A-Z])(?:\s|[,.:;)\]]|$)/.test(afterTerminator)) {
+                  currentIndex = terminatorEndIndex;
+                  continue;
+                }
               }
             }
           }

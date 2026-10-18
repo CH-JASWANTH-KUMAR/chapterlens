@@ -367,6 +367,7 @@ export function DifficultSentencesCarousel({
             {currentSentence && (
               <motion.article
                 key={currentSentence.id}
+                id={`card-${currentSentence.id}`}
                 initial={{
                   opacity: 0,
                   x: direction === 'next' ? 16 : -16,

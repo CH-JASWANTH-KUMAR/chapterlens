@@ -4,6 +4,7 @@ import React, { useRef, useEffect } from 'react';
 import { ExtractedDocument, ExtractedBlock } from '../../lib/document/types';
 import { SelectedPassage } from '../../lib/reading/types';
 import { extractPassageContext } from '../../lib/reading/contextExtractor';
+import { segmentText } from '../../lib/linguistics/segmenter';
 import { Sparkles, BookOpen, Bookmark } from 'lucide-react';
 
 interface ReadingPaneProps {
@@ -32,46 +33,39 @@ export function ReadingPane({
 
   // Splits a paragraph block into interactive sentence spans while preserving character offsets
   const renderParagraphSentences = (block: ExtractedBlock) => {
-    const text = block.text;
-    // Sentence segmentation regex matching terminal punctuation
-    const sentenceRegex = /[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g;
-    const sentenceMatches: Array<{ text: string; start: number; end: number }> = [];
+    const blockText = block.text;
+    const sentencesInBlock = segmentText(blockText);
 
-    let match: RegExpExecArray | null;
-    while ((match = sentenceRegex.exec(text)) !== null) {
-      const sentenceText = match[0];
-      const relStart = match.index;
-      const relEnd = relStart + sentenceText.length;
-      sentenceMatches.push({
-        text: sentenceText,
-        start: block.startIndex + relStart,
-        end: block.startIndex + relEnd,
-      });
+    if (sentencesInBlock.length === 0) {
+      return <span>{blockText}</span>;
     }
 
-    if (sentenceMatches.length === 0) {
-      sentenceMatches.push({
-        text,
-        start: block.startIndex,
-        end: block.endIndex,
-      });
-    }
+    const elements: React.ReactNode[] = [];
+    let cursor = 0;
 
-    return sentenceMatches.map((item, idx) => {
+    sentencesInBlock.forEach((s, idx) => {
+      if (s.startIndex > cursor) {
+        elements.push(
+          <span key={`gap-${idx}`}>{blockText.slice(cursor, s.startIndex)}</span>
+        );
+      }
+
+      const absStart = block.startIndex + s.startIndex;
+      const absEnd = block.startIndex + s.endIndex;
       const isSelected =
         selectedPassage &&
-        selectedPassage.startIndex === item.start &&
-        selectedPassage.endIndex === item.end;
+        selectedPassage.startIndex === absStart &&
+        selectedPassage.endIndex === absEnd;
 
       const handleClick = () => {
-        const passage = extractPassageContext(document, item.start, item.end, item.text);
+        const passage = extractPassageContext(document, absStart, absEnd, s.text);
         onSelectPassage(passage);
       };
 
-      return (
+      elements.push(
         <span
           key={`sent-${idx}`}
-          id={`reading-sentence-${item.start}`}
+          id={`reading-sentence-${absStart}`}
           tabIndex={0}
           role="button"
           aria-pressed={Boolean(isSelected)}
@@ -88,14 +82,14 @@ export function ReadingPane({
               : 'hover:bg-[var(--canvas-card-subtle)] hover:text-[var(--text-main)]'
           }`}
         >
-          {item.text}
+          {s.text}
           {isSelected && (
             <span className="inline-flex items-center ml-1 align-baseline">
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  const passage = extractPassageContext(document, item.start, item.end, item.text);
+                  const passage = extractPassageContext(document, absStart, absEnd, s.text);
                   onRequestExplain(passage);
                 }}
                 className="inline-flex items-center gap-1 rounded-md bg-[var(--brand-forest)] text-white px-2 py-0.5 text-[10px] font-sans font-semibold shadow-xs hover:bg-[var(--brand-forest-hover)] active:scale-95 transition-all mx-1"
@@ -107,7 +101,17 @@ export function ReadingPane({
           )}
         </span>
       );
+
+      cursor = s.endIndex;
     });
+
+    if (cursor < blockText.length) {
+      elements.push(
+        <span key="trailing-gap">{blockText.slice(cursor)}</span>
+      );
+    }
+
+    return elements;
   };
 
   let lastPage = 0;
